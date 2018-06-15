@@ -19,7 +19,6 @@ usage: pyftanalysis [options] inputfile
     --cvt CVT: print the CVT after executing prep
     -v Verbose: be more verbose
 """
-
 from __future__ import print_function, division, absolute_import
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.bytecodeContainer import BytecodeContainer

@@ -1,0 +1,296 @@
+PREP:
+GS[auto_flip] := true
+GS[scan_control] := 0
+GS[scan_type] := 0
+GS[single_width_cutin] := 0
+GS[single_width_value] := 0
+GS[freedom_vector_0] := 1
+GS[freedom_vector_1] := 1
+GS[projection_vector] := 1
+GS[loop] := 1
+GS[instruction_control_0] := 0
+GS[instruction_control_1] := 0
+GS[minimum_distance] := 1
+GS[round_state] := RoundState_G
+GS[zp0] := 1
+GS[zp1] := 1
+GS[zp2] := 1
+GS[rp0] := 0
+GS[rp1] := 0
+GS[rp2] := 0
+$prep_1 := 10
+$prep_2 := 9
+$prep_3 := 8
+$prep_4 := 7
+$prep_5 := 6
+$prep_6 := 5
+$prep_7 := 4
+$prep_8 := 3
+$prep_9 := 2
+$prep_10 := 1
+$prep_11 := 0
+CALL 0($prep_9, $prep_8)
+
+Function #0
+$fpgm_0_11 := $fpgm_0_10
+$fpgm_0_12 := 3
+$fpgm_0_12 := $fpgm_0_10
+$fpgm_0_12 := cvt_table[$fpgm_0_12]
+$fpgm_0_13 := 25
+$fpgm_0_14 := $fpgm_0_13
+$fpgm_0_13 := $fpgm_0_12
+$fpgm_0_12 := $fpgm_0_14
+cvt_table[$fpgm_0_13] := $fpgm_0_12
+$fpgm_0_11 := cvt_table[$fpgm_0_11]
+$fpgm_0_12 := 26
+$fpgm_0_13 := $fpgm_0_12
+$fpgm_0_12 := $fpgm_0_11
+$fpgm_0_11 := $fpgm_0_13
+cvt_table[$fpgm_0_12] := $fpgm_0_11
+$fpgm_0_10 := cvt_table[arg$0]
+$fpgm_0_10 := NEG $fpgm_0_10
+$fpgm_0_11 := $fpgm_0_10
+$fpgm_0_10 := $fpgm_0_9
+$fpgm_0_9 := $fpgm_0_11
+$fpgm_0_10 := cvt_table[arg$1]
+$fpgm_0_11 := $fpgm_0_10
+$fpgm_0_12 := 3
+$fpgm_0_12 := $fpgm_0_10
+$fpgm_0_11 := $fpgm_0_12 + $fpgm_0_11
+$fpgm_0_11 := ROUND_10($fpgm_0_11)
+$fpgm_0_12 := $fpgm_0_11
+$fpgm_0_13 := 9
+$fpgm_0_14 := $fpgm_0_13
+$fpgm_0_13 := $fpgm_0_12
+$fpgm_0_12 := $fpgm_0_14
+storage_area[$fpgm_0_13] := $fpgm_0_12
+$fpgm_0_12 := $fpgm_0_11
+$fpgm_0_11 := $fpgm_0_10
+$fpgm_0_10 := $fpgm_0_12
+$fpgm_0_11 := ROUND_00($fpgm_0_10)
+$fpgm_0_12 := $fpgm_0_11
+$fpgm_0_11 := $fpgm_0_9
+$fpgm_0_9 := $fpgm_0_10
+$fpgm_0_10 := $fpgm_0_12
+$fpgm_0_11 := ROUND_10($fpgm_0_10)
+$fpgm_0_10 := $fpgm_0_11 + $fpgm_0_10
+$fpgm_0_9 := $fpgm_0_10 - $fpgm_0_9
+$fpgm_0_10 := $fpgm_0_9
+$fpgm_0_11 := 26
+$fpgm_0_12 := $fpgm_0_11
+$fpgm_0_11 := $fpgm_0_9
+$fpgm_0_9 := $fpgm_0_10
+$fpgm_0_10 := $fpgm_0_12
+$fpgm_0_12 := 0
+$fpgm_0_11 := $fpgm_0_12 GT $fpgm_0_11
+if ( not $fpgm_0_11) {
+    $fpgm_0_9 := 26
+    $fpgm_0_10 := 26
+    $fpgm_0_11 := 64
+    $fpgm_0_12 := -32
+    $fpgm_0_13 := 26
+    $fpgm_0_13 := cvt_table[$fpgm_0_13]
+    $fpgm_0_14 := $fpgm_0_13
+    $fpgm_0_15 := $fpgm_0_14
+    $fpgm_0_14 := $fpgm_0_12
+    $fpgm_0_12 := $fpgm_0_13
+    $fpgm_0_13 := $fpgm_0_15
+    $fpgm_0_13 := $fpgm_0_14 EQ $fpgm_0_13
+    if ($fpgm_0_13) {
+        $fpgm_0_13 := $fpgm_0_12
+        $fpgm_0_12 := $fpgm_0_11
+        $fpgm_0_11 := $fpgm_0_13
+        $fpgm_0_12 := 63
+    } else {
+        $fpgm_0_13 := $fpgm_0_12
+        $fpgm_0_12 := $fpgm_0_11
+        $fpgm_0_11 := $fpgm_0_13
+    }
+    $fpgm_0_11 := $fpgm_0_12 - $fpgm_0_11
+    cvt_table[$fpgm_0_10] := $fpgm_0_11
+} else {
+    $fpgm_0_10 := 20
+    $fpgm_0_11 := 0
+    $fpgm_0_12 := $fpgm_0_11
+    $fpgm_0_11 := $fpgm_0_9
+    $fpgm_0_9 := $fpgm_0_10
+    $fpgm_0_10 := $fpgm_0_12
+    $fpgm_0_10 := $fpgm_0_11 GT $fpgm_0_10
+        if ( not $fpgm_0_10) {
+        $fpgm_0_9 := 25
+        $fpgm_0_10 := 64
+        $fpgm_0_11 := 32
+        $fpgm_0_12 := 25
+        $fpgm_0_12 := cvt_table[$fpgm_0_12]
+        $fpgm_0_13 := $fpgm_0_12
+        $fpgm_0_14 := $fpgm_0_13
+        $fpgm_0_13 := $fpgm_0_11
+        $fpgm_0_11 := $fpgm_0_12
+        $fpgm_0_12 := $fpgm_0_14
+        $fpgm_0_12 := $fpgm_0_13 EQ $fpgm_0_12
+            if ($fpgm_0_12) {
+            $fpgm_0_12 := $fpgm_0_11
+            $fpgm_0_11 := $fpgm_0_10
+            $fpgm_0_10 := $fpgm_0_12
+            $fpgm_0_11 := 63
+        } else {
+            $fpgm_0_12 := $fpgm_0_11
+            $fpgm_0_11 := $fpgm_0_10
+            $fpgm_0_10 := $fpgm_0_12
+        }
+        $fpgm_0_10 := $fpgm_0_11 - $fpgm_0_10
+        cvt_table[$fpgm_0_9] := $fpgm_0_10
+    }
+}
+RET
+
+fpgm_0:
+$fpgm_0_11 := $fpgm_0_10
+$fpgm_0_12 := 3
+$fpgm_0_12 := $fpgm_0_10
+$fpgm_0_12 := cvt_table[$fpgm_0_12]
+$fpgm_0_13 := 25
+$fpgm_0_14 := $fpgm_0_13
+$fpgm_0_13 := $fpgm_0_12
+$fpgm_0_12 := $fpgm_0_14
+cvt_table[$fpgm_0_13] := $fpgm_0_12
+$fpgm_0_11 := cvt_table[$fpgm_0_11]
+$fpgm_0_12 := 26
+$fpgm_0_13 := $fpgm_0_12
+$fpgm_0_12 := $fpgm_0_11
+$fpgm_0_11 := $fpgm_0_13
+cvt_table[$fpgm_0_12] := $fpgm_0_11
+$fpgm_0_10 := cvt_table[arg$0]
+$fpgm_0_10 := NEG $fpgm_0_10
+$fpgm_0_11 := $fpgm_0_10
+$fpgm_0_10 := $fpgm_0_9
+$fpgm_0_9 := $fpgm_0_11
+$fpgm_0_10 := cvt_table[arg$1]
+$fpgm_0_11 := $fpgm_0_10
+$fpgm_0_12 := 3
+$fpgm_0_12 := $fpgm_0_10
+$fpgm_0_11 := $fpgm_0_12 + $fpgm_0_11
+$fpgm_0_11 := ROUND_10($fpgm_0_11)
+$fpgm_0_12 := $fpgm_0_11
+$fpgm_0_13 := 9
+$fpgm_0_14 := $fpgm_0_13
+$fpgm_0_13 := $fpgm_0_12
+$fpgm_0_12 := $fpgm_0_14
+storage_area[$fpgm_0_13] := $fpgm_0_12
+$fpgm_0_12 := $fpgm_0_11
+$fpgm_0_11 := $fpgm_0_10
+$fpgm_0_10 := $fpgm_0_12
+$fpgm_0_11 := ROUND_00($fpgm_0_10)
+$fpgm_0_12 := $fpgm_0_11
+$fpgm_0_11 := $fpgm_0_9
+$fpgm_0_9 := $fpgm_0_10
+$fpgm_0_10 := $fpgm_0_12
+$fpgm_0_11 := ROUND_10($fpgm_0_10)
+$fpgm_0_10 := $fpgm_0_11 + $fpgm_0_10
+$fpgm_0_9 := $fpgm_0_10 - $fpgm_0_9
+$fpgm_0_10 := $fpgm_0_9
+$fpgm_0_11 := 26
+$fpgm_0_12 := $fpgm_0_11
+$fpgm_0_11 := $fpgm_0_9
+$fpgm_0_9 := $fpgm_0_10
+$fpgm_0_10 := $fpgm_0_12
+$fpgm_0_12 := 0
+$fpgm_0_11 := $fpgm_0_12 GT $fpgm_0_11
+if ( not $fpgm_0_11) {
+    $fpgm_0_10 := 20
+    $fpgm_0_11 := 0
+    $fpgm_0_12 := $fpgm_0_11
+    $fpgm_0_11 := $fpgm_0_9
+    $fpgm_0_9 := $fpgm_0_10
+    $fpgm_0_10 := $fpgm_0_12
+    $fpgm_0_10 := $fpgm_0_11 GT $fpgm_0_10
+    if ( not $fpgm_0_10 ) {
+        $fpgm_0_9 := 25
+        $fpgm_0_10 := 64
+        $fpgm_0_11 := 32
+        $fpgm_0_12 := 25
+        $fpgm_0_12 := cvt_table[$fpgm_0_12]
+        $fpgm_0_13 := $fpgm_0_12
+        $fpgm_0_14 := $fpgm_0_13
+        $fpgm_0_13 := $fpgm_0_11
+        $fpgm_0_11 := $fpgm_0_12
+        $fpgm_0_12 := $fpgm_0_14
+        $fpgm_0_12 := $fpgm_0_13 EQ $fpgm_0_12
+                if ($fpgm_0_12) {
+            $fpgm_0_12 := $fpgm_0_11
+            $fpgm_0_11 := $fpgm_0_10
+            $fpgm_0_10 := $fpgm_0_12
+            $fpgm_0_11 := 63
+        } else {
+            $fpgm_0_12 := $fpgm_0_11
+            $fpgm_0_11 := $fpgm_0_10
+            $fpgm_0_10 := $fpgm_0_12
+        }
+        $fpgm_0_10 := $fpgm_0_11 - $fpgm_0_10
+        cvt_table[$fpgm_0_9] := $fpgm_0_10
+    }
+} else {
+    $fpgm_0_9 := 26
+    $fpgm_0_10 := 26
+    $fpgm_0_11 := 64
+    $fpgm_0_12 := -32
+    $fpgm_0_13 := 26
+    $fpgm_0_13 := cvt_table[$fpgm_0_13]
+    $fpgm_0_14 := $fpgm_0_13
+    $fpgm_0_15 := $fpgm_0_14
+    $fpgm_0_14 := $fpgm_0_12
+    $fpgm_0_12 := $fpgm_0_13
+    $fpgm_0_13 := $fpgm_0_15
+    $fpgm_0_13 := $fpgm_0_14 EQ $fpgm_0_13
+        if ($fpgm_0_13) {
+        $fpgm_0_13 := $fpgm_0_12
+        $fpgm_0_12 := $fpgm_0_11
+        $fpgm_0_11 := $fpgm_0_13
+        $fpgm_0_12 := 63
+    } else {
+        $fpgm_0_13 := $fpgm_0_12
+        $fpgm_0_12 := $fpgm_0_11
+        $fpgm_0_11 := $fpgm_0_13
+    }
+    $fpgm_0_11 := $fpgm_0_12 - $fpgm_0_11
+    cvt_table[$fpgm_0_10] := $fpgm_0_11
+}
+RET
+
+prep:
+GS[auto_flip] := true
+GS[scan_control] := 0
+GS[scan_type] := 0
+GS[single_width_cutin] := 0
+GS[single_width_value] := 0
+GS[freedom_vector_0] := 1
+GS[freedom_vector_1] := 1
+GS[projection_vector] := 1
+GS[loop] := 1
+GS[instruction_control_0] := 0
+GS[instruction_control_1] := 0
+GS[minimum_distance] := 1
+GS[round_state] := RoundState_G
+GS[zp0] := 1
+GS[zp1] := 1
+GS[zp2] := 1
+GS[rp0] := 0
+GS[rp1] := 0
+GS[rp2] := 0
+$prep_1 := 10
+$prep_2 := 9
+$prep_3 := 8
+$prep_4 := 7
+$prep_5 := 6
+$prep_6 := 5
+$prep_7 := 4
+$prep_8 := 3
+$prep_9 := 2
+$prep_10 := 1
+$prep_11 := 0
+CALL 0($prep_9, $prep_8)
+
+glyf.A:
+RET
+
+storage = {$fpgm_0_13: $fpgm_0_12}, graphics_state = {'rp': [0, 0, 0], 'fv': (1, 0), 'autoFlip': True, 'dv': (1, 0), 'pv': (1, 0), 'zp': [1, 1, 1], 'loop': 1}, program_stack = [..., 8, 7, 6, 5, 4, 3], program_stack_length = 8

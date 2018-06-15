@@ -1,0 +1,150 @@
+INFO: :execute; tag is glyf.afii10071
+INFO: :     program_stack is []
+INFO: :[pc] glyf.afii10071.0->NPUSHB|[3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 72, 43, 2, 3, 2, 37]
+INFO: :     succs are [PUSHW([546, 41])]
+INFO: :     call_stack len is 0
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 72, 43, 2, 3, 2, 37]
+INFO: :[pc] glyf.afii10071.1->PUSHW|[546, 41]
+INFO: :     succs are [SVTCA(['0'])]
+INFO: :     call_stack len is 0
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 72, 43, 2, 3, 2, 37, 546, 41]
+INFO: :[pc] glyf.afii10071.2->SVTCA|['0']
+INFO: :     succs are [CALL([])]
+INFO: :     call_stack len is 0
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 72, 43, 2, 3, 2, 37, 546, 41]
+INFO: :[pc] glyf.afii10071.3->CALL|[]
+INFO: :     succs are [SVTCA(['1'])]
+INFO: :     call_stack len is 0
+calling function 41
+INFO: :in glyf.afii10071, calling function 41
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 72, 43, 2, 3, 2, 37, 546]
+INFO: :[pc] fpgm.647->MIAP|['0']
+INFO: :     succs are [PUSHB([42])]
+INFO: :     call_stack len is 1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 72, 43, 2, 3, 2]
+INFO: :[pc] fpgm.648->PUSHB|[42]
+INFO: :     succs are [LOOPCALL([])]
+INFO: :     call_stack len is 1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 72, 43, 2, 3, 2, 42]
+INFO: :[pc] fpgm.649->LOOPCALL|[]
+INFO: :     succs are [ENDF([])]
+INFO: :     call_stack len is 1
+calling function 42
+INFO: :in fpgm_41, calling function 42
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 72, 43, 2, 3]
+INFO: :[pc] fpgm.652->SHC|['1']
+INFO: :     succs are [ENDF([])]
+INFO: :     call_stack len is 2
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 72, 43, 2]
+INFO: :[pc] fpgm.653->ENDF|[]
+INFO: :     succs are []
+INFO: :     call_stack len is 2
+INFO: :pop call stack, next is ENDF([])
+INFO: :stack used 1/stack additional -1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 72, 43, 2]
+INFO: :[pc] fpgm.650->ENDF|[]
+INFO: :     succs are []
+INFO: :     call_stack len is 1
+INFO: :pop call stack, next is SVTCA(['1'])
+INFO: :stack used 4/stack additional -4
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 72, 43, 2]
+INFO: :[pc] glyf.afii10071.4->SVTCA|['1']
+INFO: :     succs are [CALL([])]
+INFO: :     call_stack len is 0
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 72, 43, 2]
+INFO: :[pc] glyf.afii10071.5->CALL|[]
+INFO: :     succs are [DELTAP1([])]
+INFO: :     call_stack len is 0
+calling function 2
+INFO: :in glyf.afii10071, calling function 2
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 72, 43]
+INFO: :[pc] fpgm.31->RCVT|[]
+INFO: :     succs are [SWAP([])]
+INFO: :     call_stack len is 1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 72, cvt_table[43]]
+INFO: :[pc] fpgm.32->SWAP|[]
+INFO: :     succs are [GC(['0'])]
+INFO: :     call_stack len is 1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, cvt_table[43], 72]
+INFO: :[pc] fpgm.33->GC|['0']
+INFO: :     succs are [ADD([])]
+INFO: :     call_stack len is 1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, cvt_table[43], AbstractValue]
+INFO: :[pc] fpgm.34->ADD|[]
+INFO: :     succs are [PUSHB([32])]
+INFO: :     call_stack len is 1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, AbstractValue ADD cvt_table[43]]
+INFO: :[pc] fpgm.35->PUSHB|[32]
+INFO: :     succs are [SUB([])]
+INFO: :     call_stack len is 1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, AbstractValue ADD cvt_table[43], 32]
+INFO: :[pc] fpgm.36->SUB|[]
+INFO: :     succs are [DUP([])]
+INFO: :     call_stack len is 1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 32 SUB AbstractValue ADD cvt_table[43]]
+INFO: :[pc] fpgm.37->DUP|[]
+INFO: :     succs are [PUSHB([70])]
+INFO: :     call_stack len is 1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 32 SUB AbstractValue ADD cvt_table[43], 32 SUB AbstractValue ADD cvt_table[43]]
+INFO: :[pc] fpgm.38->PUSHB|[70]
+INFO: :     succs are [ADD([])]
+INFO: :     call_stack len is 1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 32 SUB AbstractValue ADD cvt_table[43], 32 SUB AbstractValue ADD cvt_table[43], 70]
+INFO: :[pc] fpgm.39->ADD|[]
+INFO: :     succs are [PUSHB([4])]
+INFO: :     call_stack len is 1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 32 SUB AbstractValue ADD cvt_table[43], 70 ADD 32 SUB AbstractValue ADD cvt_table[43]]
+INFO: :[pc] fpgm.40->PUSHB|[4]
+INFO: :     succs are [MINDEX([])]
+INFO: :     call_stack len is 1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 10, 80, 32 SUB AbstractValue ADD cvt_table[43], 70 ADD 32 SUB AbstractValue ADD cvt_table[43], 4]
+INFO: :[pc] fpgm.41->MINDEX|[]
+INFO: :     succs are [SWAP([])]
+INFO: :     call_stack len is 1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 80, 32 SUB AbstractValue ADD cvt_table[43], 70 ADD 32 SUB AbstractValue ADD cvt_table[43], 10]
+INFO: :[pc] fpgm.42->SWAP|[]
+INFO: :     succs are [SCFS([])]
+INFO: :     call_stack len is 1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 80, 32 SUB AbstractValue ADD cvt_table[43], 10, 70 ADD 32 SUB AbstractValue ADD cvt_table[43]]
+INFO: :[pc] fpgm.43->SCFS|[]
+INFO: :     succs are [SCFS([])]
+INFO: :     call_stack len is 1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34, 80, 32 SUB AbstractValue ADD cvt_table[43]]
+INFO: :[pc] fpgm.44->SCFS|[]
+INFO: :     succs are [ENDF([])]
+INFO: :     call_stack len is 1
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34]
+INFO: :[pc] fpgm.45->ENDF|[]
+INFO: :     succs are []
+INFO: :     call_stack len is 1
+INFO: :pop call stack, next is DELTAP1([])
+INFO: :stack used 4/stack additional -4
+INFO: :     program_stack is [3, 2, 34, 64, 11, 11, 2, 85, 175, 34, 1, 34]
+INFO: :[pc] glyf.afii10071.6->DELTAP1|[]
+INFO: :     succs are [CALL([])]
+INFO: :     call_stack len is 0
+Traceback (most recent call last):
+  File "/home/zeming/anaconda/bin/pyftanalysis", line 11, in <module>
+    load_entry_point('fonttools', 'console_scripts', 'pyftanalysis')()
+  File "/home/zeming/Desktop/projects/fonttools/Lib/fontTools/analysis.py", line 251, in main
+    process(jobs, options)
+  File "/home/zeming/Desktop/projects/fonttools/Lib/fontTools/analysis.py", line 160, in process
+    ae, called_functions = analysis(bc, glyphs)
+  File "/home/zeming/Desktop/projects/fonttools/Lib/fontTools/analysis.py", line 86, in analysis
+    called_functions.update(executeGlyphs(abstractExecutor, environment_after_prep, glyphs))
+  File "/home/zeming/Desktop/projects/fonttools/Lib/fontTools/analysis.py", line 68, in executeGlyphs
+    abstractExecutor.execute(glyph)
+  File "/home/zeming/Desktop/projects/fonttools/Lib/fontTools/ttLib/instructions/abstractExecute.py", line 2123, in execute
+    ir.extend(self.environment.execute_current_instruction(self.current_instruction))
+  File "/home/zeming/Desktop/projects/fonttools/Lib/fontTools/ttLib/instructions/abstractExecute.py", line 1403, in execute_current_instruction
+    getattr(self,"exec_"+self.current_instruction.mnemonic)()
+  File "/home/zeming/Desktop/projects/fonttools/Lib/fontTools/ttLib/instructions/abstractExecute.py", line 377, in exec_DELTAP1
+    self.exec_DELTA("P1")
+  File "/home/zeming/Desktop/projects/fonttools/Lib/fontTools/ttLib/instructions/abstractExecute.py", line 364, in exec_DELTA
+    args = self.program_stack_pop_many(loopValue)
+  File "/home/zeming/Desktop/projects/fonttools/Lib/fontTools/ttLib/instructions/abstractExecute.py", line 180, in program_stack_pop_many
+    last_val.append(self.program_stack_pop())
+  File "/home/zeming/Desktop/projects/fonttools/Lib/fontTools/ttLib/instructions/abstractExecute.py", line 172, in program_stack_pop
+    val = self.program_stack.pop()
+IndexError: pop from empty list
+

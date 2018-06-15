@@ -1,0 +1,206 @@
+#! /usr/bin/env python
+"""
+usage: runRoundtripTests [options] inputFile
+
+    options:
+    -f NAME folder: get all ttx from folder NAME as input files
+
+    This script will run a simple COI code generation / roundtrip back
+    to bytecode for a given font. For each font:
+    - run analysis
+    - roundtrip output code back to a font file
+    - compare glyphs rendered for new and original font files
+"""
+
+import sys
+import getopt
+import os
+from fontTools.ttLib import TTFont
+from fontTools.misc.captureOutput import captureOutput
+from fontTools.ttLib.bytecodeContainer import BytecodeContainer, Program
+from fontTools.ttLib.instructions import statements, instructionConstructor, abstractExecute
+from fontTools import analysis
+from fontTools import coi2ttf
+from fontTools import compare
+
+def usage():
+    print(__doc__)
+    sys.exit(1)
+
+def makeArgs(*params):
+    args = []
+    for param in params:
+        args.append(param)
+    return args
+
+def load_font(font):
+    fileformat = font.split('.')[-1]
+    if fileformat == 'ttf':
+        tt = TTFont(font)
+    else:
+        tt = TTFont()
+        tt.importXML(font, quiet=True)
+    return tt
+
+def runTtx2Coi(ttx):
+    filename = "%s.tmp" % ttx
+    args = makeArgs("-pfziG", ttx)
+    with captureOutput() as out:
+        try:
+            analysis.main(args)
+            result = out.getOutput()
+        except:            
+            result = out.getOutput()
+    text_file = open(filename, "w")
+    text_file.write(result)
+    text_file.close()
+    return filename
+
+def runCoi2Ttx(coi_code):
+    
+    args = makeArgs(coi_code)
+    output = ""
+    with captureOutput() as out:
+        try:
+            coi2ttf.main(args)
+            output = out.getOutput()
+        except:
+            output = out.getOutput()
+    
+    tags = {}
+    current_tag = ""
+
+    for line in output.split('\n'):
+        if line.isspace() or line is "":
+            # remove GS initialization instructions from prep 
+            if current_tag == "prep":
+                del tags['prep'][:17]
+            current_tag = ""
+        elif line.startswith('prep:'):
+            current_tag = 'prep'
+            tags['prep'] = []
+        elif line.startswith('glyf'):
+            current_tag = line[:-1]
+            tags[current_tag] = []
+        elif current_tag != "":
+            tags[current_tag].append(line)
+
+    return tags 
+
+def extractBytecode(font):
+    bytecode = {}
+    tt = load_font(font)
+    try:
+        glyfs = tt.get('glyf').keys()
+        for glyf in glyfs:
+            try:
+                assembly = tt['glyf'].glyphs[glyf].program.getAssembly()
+                key = "glyf.{0}".format(glyf)
+                bytecode[key] = []
+                for instr in assembly:
+                    bytecode[key].append(instr)
+            except:
+                pass
+    except:
+        # font has no glyphs
+        pass
+    try:
+        bytecode['prep'] = tt['prep'].program.getAssembly()
+    except:
+        # font has no prep
+        pass
+
+    return bytecode
+
+def runTests(jobs, use_freetype=True):
+
+    def set_up(job):
+        coi_code = runTtx2Coi(job)
+        roundtrip = runCoi2Ttx(coi_code)
+        bytecode = extractBytecode(job)
+        return bytecode, roundtrip
+
+    def stack_code_compare(bytecode, roundtrip):
+        error = []
+        for table in bytecode:
+            try:
+                for b, r in zip(bytecode[table], roundtrip[table]):
+                    assert(b == r)
+            except:
+                error.append(table)
+        print("Errors found for font {0}: {1}".format(job, str(len(error))))
+
+    def freetype_compare(ttxfile, bytecode, roundtrip):
+        # create font file from bytecode
+        font_original = load_font(ttxfile)
+        bytecodeContainer = BytecodeContainer(font_original)
+        for key in bytecode.keys():
+            program_tag = key
+            instruction = constructInstructions(program_tag, bytecode[key])
+            bytecodeContainer.tag_to_programs[program_tag] = Program(instruction)
+        bytecodeContainer.updateTTFont(font_original)
+        font_filename = "{0}_tmp".format(job)
+        font_original.save(font_filename)
+        font_original.close()
+
+        # create font file from roundtrip
+        font_roundtrip = load_font(ttxfile)
+        bytecodeContainer = BytecodeContainer(font_roundtrip)
+        for key in roundtrip.keys():
+            program_tag = key
+            instruction = constructInstructions(program_tag, roundtrip[key])
+            bytecodeContainer.tag_to_programs[program_tag] = Program(instruction)
+        bytecodeContainer.updateTTFont(font_roundtrip)
+        roundtrip_filename = "{0}_roundtrip".format(job)
+        font_roundtrip.save(roundtrip_filename)
+        font_roundtrip.close()
+
+        args = makeArgs("-i", font_filename, roundtrip_filename)
+        passed = True
+        with captureOutput() as out:
+            try:
+                compare.main(args)
+            except:
+                passed = False
+        os.remove(font_filename)
+        os.remove(roundtrip_filename)
+        return passed
+
+    for job in jobs:
+        toTtx, toCoi = set_up(job)
+        if use_freetype:
+            passed = freetype_compare(job, toTtx, toCoi)
+            print("{0}: {1}".format(job, "OK" if passed is True else "Failed"))
+        else:
+            stack_code_compare(toTtx, toCoi)
+
+def main(args):
+
+    jobs = [] 
+    try:
+        options, files = getopt.getopt(args, "f:",)
+    except getopt.GetoptError:
+        usage()
+
+    for option, value in options:
+        if option == "-f":
+            currentDir = "{0}/{1}".format(os.getcwd(), value)
+            files = []
+            for file in os.listdir(currentDir):
+                files.append("{0}/{1}".format(currentDir, file))
+
+    if not files:
+        usage()
+
+    for input in files:
+        fileformat = input.split('.')[-1]
+        if fileformat == 'ttx' or fileformat == 'ttf':
+            jobs.append(input)
+        else:
+            continue
+
+    runTests(jobs)
+
+if __name__ == '__main__':
+  main(sys.argv[1:])
+

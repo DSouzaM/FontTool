@@ -1,0 +1,17 @@
+####S
+fpgm_0:
+$fpgm_0_12 := 3
+$fpgm_0_13 := 4
+$fpgm_0_14 := $fpgm_0_13
+$fpgm_0_13 := $fpgm_0_12
+$fpgm_0_12 := $fpgm_0_14
+$fpgm_0_14 := $fpgm_0_12
+$fpgm_0_15 := 5
+$fpgm_0_16 := $fpgm_0_15
+$fpgm_0_15 := $fpgm_0_13
+$fpgm_0_13 := $fpgm_0_14
+$fpgm_0_14 := $fpgm_0_16
+$fpgm_0_14 := $fpgm_0_15 EQ $fpgm_0_14
+####E
+
+

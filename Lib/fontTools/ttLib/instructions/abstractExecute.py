@@ -509,31 +509,22 @@ class Environment(object):
         self.current_instruction_intermediate.append(IR.OperationAssignmentStatement(v, res))
 
     def exec_GPV(self):
-        #op1 = self.program_stack[-2]
-        #op2 = self.program_stack[-1]
-        #self.graphics_state['pv'] = (op1.data,op2.data)
-        #self.program_stack_pop_many(2)
-        #raise NotImplementedError
-	#self.program_stack_push(dataType.EF2Dot14,False);
-	#self.program_stack_push(dataType.EF2Dot14,False)
-        #logger.info("     program_stack is %s" % (str(map(lambda s:s.eval(False), self.program_stack))))
 	self.program_stack_changes.extend(["push","push"])
 	op1 = self.graphics_state['pv'][0]
 	op2 = self.graphics_state['pv'][1]
-	pv0 = self.program_stack_push(op1)
-	pv1 = self.program_stack_push(op2)
+	pv0 = self.program_stack_push(op1,assign=False)
+	pv1 = self.program_stack_push(op2,assign=False)
 	self.current_instruction_intermediate.append(IR.CopyStatement(pv0,IR.ProjectionVectorByComponent(0)))
         self.current_instruction_intermediate.append(IR.CopyStatement(pv1,IR.ProjectionVectorByComponent(1)))
-        logger.info("     program_stack is %s" % (str(map(lambda s:s.eval(False), self.program_stack))))
-
+        #logger.info("     program_stack is %s" % (str(map(lambda s:s.eval(False), self.program_stack))))
 	
 
     def exec_GFV(self):
 	self.program_stack_changes.extend(["push","push"])
         op1 = self.graphics_state['fv'][0]
         op2 = self.graphics_state['fv'][1]
-        fv0 = self.program_stack_push(op1)
-        fv1 = self.program_stack_push(op2)
+        fv0 = self.program_stack_push(op1,assign=False)
+        fv1 = self.program_stack_push(op2,assign=False)
         self.current_instruction_intermediate.append(IR.CopyStatement(fv0, IR.FreedomVectorByComponent(0)))
         self.current_instruction_intermediate.append(IR.CopyStatement(fv1, IR.FreedomVectorByComponent(1)))
 
@@ -1248,8 +1239,8 @@ class Environment(object):
         self.current_instruction_intermediate.append(IR.CopyStatement(IR.RoundState(), dataType.RoundState_DTG()))
 
     def exec_ROFF(self):
-        #raise NotImplementedError
-	pass
+	self.current_instruction_intermediate.append(IR.ROFFMethodCall())
+
     def exec_ROLL(self):
 	self.program_stack_changes.extend(["read","read","read"])
         tmp = self.program_stack[-1]
@@ -1412,8 +1403,8 @@ class Environment(object):
 
     def exec_SPVFS(self):
 	self.program_stack_changes.extend(["read","read","pop","pop"])
-        self.program_stack_pop_many(2)
-        #raise NotImplementedError
+        args = self.program_stack_pop_many(2)
+        self.current_instruction_intermediate.append(IR.SPVFSMethodCall(args))
 
     def exec_SPVTCA(self):
         data = int(self.current_instruction.data[0].value)
@@ -1425,9 +1416,10 @@ class Environment(object):
         self.current_instruction_intermediate.append(IR.CopyStatement(IR.ProjectionVector(),IR.Constant(data)))
 
     def exec_SPVTL(self):
+	data = self.current_instruction.data[0]
         self.program_stack_changes.extend(["read","read","pop","pop"])
         args = self.program_stack_pop_many(2)
-	self.current_instruction_intermediate.append(IR.SPVTLMethodCall(args))
+	self.current_instruction_intermediate.append(IR.SPVTLMethodCall(data,args))
         
 
     def exec_S45ROUND(self):
@@ -1597,10 +1589,9 @@ class Environment(object):
         self.current_instruction_intermediate.append(IR.CallStatement(var))
 	
 
-    def execute_current_instruction(self, ins,func_tree):
+    def execute_current_instruction(self, ins):
         self.current_instruction_intermediate = []
         self.current_instruction = ins
-        self.current_func_tree = func_tree
         getattr(self,"exec_"+self.current_instruction.mnemonic)()
 	self.program_stack_changes.append("dot")
         return self.current_instruction_intermediate
@@ -1695,11 +1686,12 @@ class Executor(object):
             self.call_stack = []
 	    self.possible_functions = []
 	    self.program_stack_backup = []
+	    self.arguments_recorded_functions = None
             self.largest_function = -1
 	    self.in_test_function = 0	    
 	    self.lower_bound = -1
 	    self.upper_bound = -1
-
+	    self.current_instruction_intermediate = None
         def find_largest_func(self,bytecodeContainer):
             largest = -1
             for key,value in bytecodeContainer.function_table.items(): 
@@ -1720,24 +1712,19 @@ class Executor(object):
         self.call_stack = []
         self.stored_environments = {}
         self.if_else_stack = []
-        self.current_func_tree = None
         # generated as a side effect:
         self.global_function_table = {}
         self.visited_functions = set()
         self.bytecode2ir = {}
         self.already_seen_insts = set()
         self.ignored_insts = set()
-	self.current_execution_stream = None
 	self.modified_program_functions = set()
+	self.first_time_call_args = {}
+	self.first_time_stack_effect = {}
         # encounter an uncertain callee
         self.uncertain_callee_backup = None
 	self.replace_function_table = {}
-	self.function_arg_list = {}
 	self.uncertain_callee_delegate = {}
-	# testing purpose attributes
-	self.call24 = 0 
-	self.uncertain = 0
-	self.glys = []
 
 
 	# for test script
@@ -1817,9 +1804,9 @@ class Executor(object):
             result = cls.__new__(cls)
             memo[id(self)] = result
             for k, v in self.__dict__.items():
-                if k == 'IR':
-                    setattr(result, k, v)
-                else:
+                #if k == 'IR':
+                #    setattr(result, k, v)
+                #else:
                     setattr(result, k, copy.deepcopy(v, memo))
             return result
 
@@ -1950,6 +1937,8 @@ class Executor(object):
 		backup.upper_bound = upper_bound
 		backup.function_itr = lower_bound
 		backup.backup_executor_status = copy.deepcopy(self)
+		backup.current_instruction_intermediate = copy.deepcopy(self.environment.current_instruction_intermediate)
+		backup.if_else_stack = copy.deepcopy(self.if_else_stack)
 		self.uncertain_callee_backup = backup
 		backup.backup_executor_status.current_instruction.successors = self.current_instruction.successors
 		backup.backup_executor_status.current_instruction.predecessor = self.current_instruction.predecessor
@@ -2021,22 +2010,18 @@ class Executor(object):
                   self.uncertain_callee_backup.function_itr += 1
                   return
 
-
         # update call graph counts
         first_time_called = False
         if not callee in self.visited_functions:
             first_time_called = True
-
         self.visited_functions.add(callee)
         if callee not in self.global_function_table:
             self.global_function_table[callee] = 1
         else:
             self.global_function_table[callee] += 1
-
         # execute the call instruction itself
 	tag = "fpgm_%s" % callee
-        self.environment.execute_current_instruction(self.current_instruction,self.environment.current_func_tree)
-
+        self.environment.execute_current_instruction(self.current_instruction)
         self.environment.minimum_stack_depth = self.stack_depth()
 
         # when first time executing a fpgm, set current function tree to this and append the expressions in this function to this func_tree
@@ -2120,13 +2105,15 @@ class Executor(object):
 	is_first_visit = False
         #if not self.current_instruction == None:
 	#    print 'exec return pop stack:',self.current_instruction,self.current_instruction.id
+	record_arguments = False
+
         if tag_returned_from in self.visited_functions:
             # calling a function for a second time
             # assert that stored instructions == bytecodeContainer.IRs[tag]
             pass
         else:
+	    is_first_visit = True	
             intermediateCodes = []
-	    is_first_visit = True
             for inst in self.bytecodeContainer.function_table[callee].instructions:
 		## If this instruction is IF, append the corresponding IR.IF_ELSE_BLOCK to IntermediateCodes
                 if inst not in self.ignored_insts and inst.id in self.bytecode2ir:
@@ -2136,15 +2123,14 @@ class Executor(object):
 			intermediateCodes.append(inst.LOOP_BLOCK)
 		    else:
                     	intermediateCodes.extend(self.bytecode2ir[inst.id])
-		
             self.bytecodeContainer.IRs[tag_returned_from] = self.fixupDestsToIR(intermediateCodes)
+
         self.visited_functions.add(tag_returned_from)
+	
 
         stack_depth_upon_call = len(caller_program_stack)
         stack_used = stack_depth_upon_call - self.environment.minimum_stack_depth
         stack_additional = self.stack_depth() - stack_depth_upon_call
-        #self.environment.program_stack = caller_program_stack
-
         if(repeats > 1):
 	    # reset the cur instruction if it's loop call
 	    self.current_instruction = self.current_instruction.predecessor
@@ -2178,8 +2164,6 @@ class Executor(object):
             self.environment.replace_locals_with_formals()
             self.stored_environments = {}
 
-
-
 	## argument name modified
 	call_arg_list = []
         call_args = '('
@@ -2192,7 +2176,7 @@ class Executor(object):
 	    call_arg_list.append(call_arg_name)
         call_args += ')'
         call_rv = ''
-        if stack_additional > 0:
+	if stack_additional > 0:
             call_rv += '('
             for i in range(stack_additional):
                 if i > 0:
@@ -2205,31 +2189,28 @@ class Executor(object):
             repeats_str = '_%s' % str(repeats)
         else:
             repeats_str = ''
+	if callee not in self.first_time_call_args.keys():
+            self.first_time_call_args[callee] = call_arg_list
+	    self.first_time_stack_effect[callee] = len(self.environment.program_stack)-len(caller_program_stack)
         # XXX this is mis-typed; it should be a MethodCallInstruction
         #self.setIRForBytecode(previous_instruction, ['%sCALL%s %s%s' % (call_rv, repeats_str, str(callee), call_args)])
-	if is_first_visit:
-	    self.function_arg_list[callee] = call_arg_list
-
+	ori_callee = callee
 	if callee in self.replace_function_table.keys():
-	    ori_callee = callee
 	    callee = []
-	    call_arg_list = []
+	   # call_arg_list = []
 	    for fn in self.replace_function_table[ori_callee]:
 	        callee.append(fn)
-		call_arg_list.append(self.function_arg_list[fn])
-	  
+		#call_arg_list.append(self.function_arg_list[fn])
+
 	temp = IR.CallStatement(callee)
 	temp.callee = callee
 	temp.call_rv = call_rv
 	temp.repeats = repeats_str
 	temp.call_args = call_args
-	temp.is_first = is_first_visit
 	temp.call_arg_list = call_arg_list
 	temp.stack_effect = len(self.environment.program_stack) - len(caller_program_stack)
 	self.setIRForBytecode(previous_instruction,[temp])
 	
-
-
         logger.info("pop call stack, next is %s", str(self.current_instruction))
         logger.info("stack used %d/stack additional %d" % (stack_used, stack_additional))
        
@@ -2284,7 +2265,7 @@ class Executor(object):
 	if not self.current_tag == 'prep':
 	    self.print_progress('glyf')
         while  self.current_instruction is not  None:
-	    if self.current_tag == 'prep':
+	    if self.current_instruction.id.startswith('prep'):
 		self.current_progress < int(self.current_instruction.id[5:])
 		self.current_progress = int(self.current_instruction.id[5:])
 	        self.print_progress('prep')
@@ -2603,7 +2584,7 @@ class Executor(object):
                 branch_succ = self.environment.adjust_succ_for_relative_jump(self.current_instruction, dest, self.current_instruction.mnemonic,self.if_else_stack,self.ignored_insts,instructions_list,self.bytecode2ir,self)
                 logger.info("     adjusted succs now %s", self.current_instruction.successors)
 	    
-	    ir.extend(self.environment.execute_current_instruction(self.current_instruction,self.current_func_tree))
+	    ir.extend(self.environment.execute_current_instruction(self.current_instruction))
             if self.stack_depth() > self.maximum_stack_depth:
                 self.maximum_stack_depth = self.stack_depth()
             self.setIRForBytecode(self.current_instruction, ir)
@@ -2875,7 +2856,7 @@ class Executor(object):
 
                     assert len(self.if_else_stack)==0
 		    if not self.uncertain_callee_backup is None and self.current_instruction.id.startswith(tag):
-			print 'this function works'
+			#print 'this function works'
 			self.uncertain_callee_backup.possible_functions.append(self.uncertain_callee_backup.function_itr)
                         self.environment = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.environment)
                         self.if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.if_else_stack)
@@ -2898,9 +2879,10 @@ class Executor(object):
                            self.call_stack[i] = newtuple
 
 
-                        self.visited_functions = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.visited_functions)
                         self.bytecode2ir = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.bytecode2ir)
                         self.already_seen_insts = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.already_seen_insts)
+			self.ignored_insts = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.ignored_insts)
+			self.if_else_stack = copy.deepcopy(self.uncertain_callee_backup.if_else_stack)
                         self.uncertain_callee_backup.function_itr += 1
                         continue
 		    
@@ -2924,8 +2906,8 @@ class Executor(object):
 		else:
                     intermediateCodes.extend(self.bytecode2ir[inst.id])
         self.bytecodeContainer.IRs[tag] = self.fixupDestsToIR(intermediateCodes)
-	erase_lines(self.row_to_erase)
-	row_to_erase = 0
+	#erase_lines(self.row_to_erase)
+	#row_to_erase = 0
 
 
 

@@ -22,7 +22,7 @@ usage: pyftanalysis [options] inputfile
 from __future__ import print_function, division, absolute_import
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.bytecodeContainer import BytecodeContainer
-from fontTools.ttLib.instructions import statements, abstractExecute
+from fontTools.ttLib.instructions import statements, abstractExecute, IntermediateCode
 from fontTools.ttLib.data import dataType
 from fontTools.misc.util import makeOutputFileName
 import sys
@@ -38,6 +38,7 @@ import copy
 import tempfile
 import psutil
 import time
+
 
 CURSOR_UP = '\x1b[1A'
 ERASE = '\x1b[2K'
@@ -59,13 +60,10 @@ def executeGlyphs(abstractExecutor, initialEnvironment, glyphs,ast):
     called_functions = set()
     i = 0
     for glyph in glyphs:
+	i += 1
+	if not i == 37:
+            continue
 	abstractExecutor.glyph_num += 1
-	#if  i <1280 or glyph in ['glyf.x','glyf.X','glyf.H18551','glyf.uni04B2']:
-	#    print('skip\n\n\n\n\n\n\n\n\n')
-	#    continue
-	#if not glyph == 'glyf.X':
-	#    continue
-	#print('executing glyph(', i,'/',str(len(glyphs)) , '):',glyph,' ...  memory usage:',str(process.memory_info().rss/1024/1024),' mb','time usage:',str(hours),':',str(minutes),':',str(seconds))
         abstractExecutor.environment = copy.deepcopy(initialEnvironment)
         abstractExecutor.execute(glyph)
         called_functions.update(list(set(abstractExecutor.visited_functions)))
@@ -181,9 +179,15 @@ def process(jobs, options):
             glyphs = filter(lambda x: x != 'fpgm' and x != 'prep', bc.tag_to_programs.keys())
         else:
             glyphs = map(lambda x: 'glyf.'+x, options.glyphs)
-
+        
+	first_time_call_args = {}
         if options.outputIR or options.reduceFunctions:
             ae, called_functions = analysis(bc, glyphs, input)
+	    # configure call args of fpgm
+	    first_time_call_args = ae.first_time_call_args
+	    first_time_stack_effect = ae.first_time_stack_effect
+	    for k in first_time_call_args.keys():
+	        ast.add_fpgm_args(k,first_time_call_args[k],first_time_stack_effect[k])
 
 	output_fd = None
 	if not output is None:

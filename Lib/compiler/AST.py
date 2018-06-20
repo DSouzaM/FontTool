@@ -12,10 +12,11 @@ class font_AST:
         self.program_functions = []
         self.glyph_functions = []
 	self.fpgm2args = {}
+	self.fpgm2stack_effect = {}
 
-
-    def add_fpgm_args(self,callee,args):
+    def add_fpgm_args(self,callee,args,stack_effect):
         self.fpgm2args[callee] = args
+	self.fpgm2stack_effect[callee] = stack_effect
 
     def find_ast_by_tag(self,tag):
         if tag == "prep":
@@ -44,6 +45,7 @@ class function:
         self.expressions = []
         self.branch_stack = []
 	self.arguments = []
+	self.stack_effect = 0
 
     def push_expression(self,exp):
         if len(self.branch_stack) == 0:
@@ -107,7 +109,7 @@ class call_expression(methodCall_expression):
 	self.args = args
 	self.callee = callee
 	self.stack_effect = stack_effect
-
+	self.cn = -1
 
 class unary_expression(expression):
     def __init__(self):
@@ -122,6 +124,7 @@ class if_expression(expression):
     def __init__(self):
         self.mode = "IF"
         self.status = "IF"
+	self.reverse = False
         self.condition_expression = None
         self.if_branch = []
         self.else_branch = []

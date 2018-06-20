@@ -95,7 +95,7 @@ fonts_without_dir = []
 for d in directory_fonts:
     print '**************** in directory:  <',d[0],'>'
     for font_name in d[1]:
-        print '# ',itr,font_name
+        print '# ',itr,'. ',font_name
 	fonts_without_dir.append(font_name)
 	fonts.append(d[0]+'/'+font_name)
 	itr += 1
@@ -138,6 +138,20 @@ for i in range (0,len(fonts)):
     args = ['-fipGz',fonts[i],output_name]
     print '**************** symbolic executing ',fonts[i]
     FT.test(args)
+
+    print '**************** creating .ttf file ...'
+    cmd = "ttx -q "+output_directory+'/'+current_font_name[:-4]+"_modified.ttx"
+    os.system(cmd)
+    erase_lines(1)
+    print '**************** .ttf file created.'
+    print '**************** running bitmap matching test ...'
+    
+    bitmap_input = output_directory+'/'+current_font_name[:-4]+".ttf"
+    bitmap_output = output_directory+'/'+current_font_name[:-4]+"_modified.ttf"
+    cmd = output_directory+'/'+'a.out '+bitmap_input+' '+bitmap_output
+    os.system(cmd)
+
+
     num_of_success += 1
      
 

@@ -40,7 +40,7 @@ class Variable(dataType.AbstractValue):
 
 class GraphicsStateVariable(Variable):
     def __repr__(self):
-        return 'GS['+self.identifier+']'
+        return self.identifier
 
 class AutoFlip(GraphicsStateVariable):
     def __init__(self):
@@ -279,7 +279,7 @@ class MethodCallStatement(object):
     def setReturnVal(self, returnVal):
         self.returnVal = returnVal
     def __repr__(self):
-	if  isinstance(self,CallStatement):
+	if isinstance(self,CallStatement):
             return '%sCALL%s %s%s' % (self.call_rv, self.repeats, str(self.callee), self.call_args)
         repS = ''
         if self.returnVal is not None:
@@ -292,25 +292,15 @@ class MethodCallStatement(object):
     def push_expression(self,func_tree):
         # func call statement comes first
         if isinstance(self,CallStatement):
-            if self.is_first:
-		if isinstance(self.callee,list):
-		    for k in range(0,len(self.callee)):
-			func_tree.font_ast.add_fpgm_args(self.callee[k],self.call_arg_list[k])
-		else:
-                    func_tree.font_ast.add_fpgm_args(self.callee,self.call_arg_list)
 	    exp = AST.call_expression(self.callee,self.stack_effect,self.call_arg_list)
-
 	    if isinstance(self.callee,list):
 		exp = AST.call_expression(self.callee[0],self.stack_effect,self.call_arg_list)
+	    if len(self.repeats) > 0:
+		cn = int(self.repeats[1:len(self.repeats)])
+		exp.cn = cn
+
 	    func_tree.push_expression(exp)
 	    return
-	if isinstance(self,LoopCallStatement):
-	    if self.is_first:
-		func_tree.font_ast.add_fpgm_args(self.parameters[0],self.call_arg_list)
-	    exp = AST.methodCall_expression("LOOPCALL")
-	    exp.args = [self.parameters[0],self.count]
-	    func_tree.push_expression(exp)
-	    return 
 
 	if self.returnVal is not None:
             exp = AST.assignment_expression()
@@ -353,6 +343,8 @@ class MethodCallStatement(object):
 		exp = AST.methodCall_expression("MIRP",self.data.value,self.parameters)
 	    elif isinstance(self,MSIRPMethodCall):
 		exp = AST.methodCall_expression("MSIRP",self.data.value,self.parameters)
+	    elif isinstance(self,ROFFMethodCall):
+		exp = AST.methodCall_expression("ROFF",None,None)
 	    elif isinstance(self,ISECTMethodCall):
 	        exp = AST.methodCall_expression("ISECT",None,self.parameters)
 	    elif isinstance(self,SCFSMethodCall):
@@ -361,6 +353,8 @@ class MethodCallStatement(object):
 		exp = AST.methodCall_expression("SPVTL",self.data.value,self.parameters)
 	    elif isinstance(self,SFVTPVMethodCall):
 	        exp = AST.methodCall_expression("SFVTPV",None,self.parameters)
+	    elif isinstance(self,SPVFSMethodCall):
+  	        exp = AST.methodCall_expression("SPVFS",None,self.parameters)
 	    elif isinstance(self,SDBMethodCall):
 		exp = AST.methodCall_expression("SDB",None,self.parameters)
 	    elif isinstance(self,SDPVTLMethodCall):
@@ -472,6 +466,12 @@ class MIRPMethodCall(MethodCallStatement):
         super(MIRPMethodCall, self).__init__(parameters, returnVal)
         self.methodName = 'MIRP'
 
+class ROFFMethodCall(MethodCallStatement):
+    def __init__(self,parameters = [],returnVal=None):
+        super(ROFFMethodCall,self).__init__(parameters,returnVal)
+        self.methodName = 'ROFF'
+
+
 
 class GCMethodCall(MethodCallStatement):
     def __init__(self, data, parameters = [], returnVal=None):
@@ -508,9 +508,15 @@ class ROUNDMethodCall(MethodCallStatement):
 	self.data = data
         self.methodName = 'ROUND_'+data.value
 
+class SPVFSMethodCall(MethodCallStatement):
+    def __init__(self,parameters=[],returnVal=None):
+        super(SPVFSMethodCall,self).__init__(paramters,returnVal)
+        self.methodName = "SPVFS"
+
 class SPVTLMethodCall(MethodCallStatement):
-    def __init__(self,parameters = [],returnVal=None):
+    def __init__(self,data,parameters = [],returnVal=None):
         super(SPVTLMethodCall,self).__init__(parameters,returnVal)
+	self.data = data
 	self.methodName = "SPVTL"
 
 class SHPMethodCall(MethodCallStatement):
@@ -696,9 +702,15 @@ class AssignmentStatement(dataType.AbstractValue):
 	    exp.right_oprand.oprand = self.right.arg
 
 	elif isinstance(self.right,Variable):
-	    exp.right_oprand = AST.terminal_expression()
-	    exp.right_oprand.type = "identifier"
-	    exp.right_oprand.value = self.right.identifier
+
+            if isinstance(self.right,GraphicsStateVariable):
+                exp.right_oprand = AST.terminal_expression()
+                exp.right_oprand.type = "GS"
+                exp.right_oprand.value = self.right.identifier[3:len(self.right.identifier)-1]
+	    else:
+	        exp.right_oprand = AST.terminal_expression()
+	        exp.right_oprand.type = "identifier"
+	        exp.right_oprand.value = self.right.identifier
 
 	elif isinstance(self.right,Boolean):
 	    exp.right_oprand = AST.terminal_expression("bool",self.right.value)
@@ -720,9 +732,6 @@ class AssignmentStatement(dataType.AbstractValue):
         elif isinstance(self.right,dataType.RoundState_Super45):
             exp.right_oprand = AST.roundState_expression("RoundState_Super45")
 		
-	elif isinstance(self.right,Boolean):
-	    exp.right_oprand = AST.terminal_expression("bool",)
-
         elif isinstance(self.right,ReadFromIndexedStorage):
 	    exp.right_oprand = AST.IndexedStorage_expression()
 	    exp.right_oprand.storage = self.right.storage
@@ -738,11 +747,6 @@ class AssignmentStatement(dataType.AbstractValue):
 	    else:
 		exp.right_oprand.index_type = "other type"	
 	
-	elif isinstance(self.right,GraphicsStateVariable):
-            exp.right_oprand = AST.terminal_expression()
-	    exp.right_oprand.type = "GS"
-	    exp.right_oprand.value = self.right.identifier[3,len(self.right.identifier)-1]
-
 	elif isinstance(self.right,dataType.PPEM_X):
 	    exp.right_oprand = AST.terminal_expression()
 	    exp.right_oprand.type = "MPPEM"
@@ -779,10 +783,11 @@ class CopyStatement(AssignmentStatement):
 	if hasattr(variable,'is_all'):
 	    if variable.is_all:
 		self.left = self.left + ".all"
-        if variable.data == None:
-            variable.data = data
-        self.right = variable.data
-        
+        if variable.data == None or isinstance(data,GraphicsStateVariable):
+	    self.right = data
+  	else:	
+            self.right = variable.data
+
 class CallStatement(MethodCallStatement):
     def __init__(self, variable):
         super(CallStatement, self).__init__([variable])
@@ -931,6 +936,7 @@ class IfElseBlock(object):
          exp = AST.if_expression()
 	 func_tree.push_expression(exp)
 	 func_tree.branch_stack.append(exp)
+	 exp.reverse = self.reverse
 	 self.func_tree = func_tree
 
     def __init__(self, condition = None, nesting_level = 1):

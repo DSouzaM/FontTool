@@ -2088,108 +2088,16 @@ DELTAC3(arg$30,arg$31,arg$32,arg$33,arg$34,arg$35)
 CALL 84()
 
 Function #0
-$fpgm_0_51 := cvt_table[arg$0]
-$fpgm_0_52 := $fpgm_0_51
-$fpgm_0_51 := $fpgm_0_50
-$fpgm_0_50 := $fpgm_0_52
-$fpgm_0_51 := GC_0(arg$1)
-$fpgm_0_50 := $fpgm_0_51 + $fpgm_0_50
-$fpgm_0_51 := $fpgm_0_50
-$fpgm_0_52 := 38
-$fpgm_0_51 := $fpgm_0_52 + $fpgm_0_51
-$fpgm_0_52 := 4
-$fpgm_0_52 := $fpgm_0_51
-$fpgm_0_51 := $fpgm_0_48
-$fpgm_0_49 := $fpgm_0_50
-$fpgm_0_50 := $fpgm_0_51
-$fpgm_0_48 := $fpgm_0_52
-$fpgm_0_52 := $fpgm_0_51
-$fpgm_0_51 := $fpgm_0_50
-$fpgm_0_50 := $fpgm_0_52
-SCFS($fpgm_0_51,$fpgm_0_51)
-SCFS($fpgm_0_50,arg$2)
-RET
+  <not executed, no IR>
 
 Function #1
-$fpgm_1_56 := cvt_table[arg$0]
-$fpgm_1_57 := $fpgm_1_56
-$fpgm_1_56 := $fpgm_1_55
-$fpgm_1_55 := $fpgm_1_57
-$fpgm_1_56 := GC_0(arg$1)
-$fpgm_1_57 := $fpgm_1_56
-$fpgm_1_56 := $fpgm_1_55
-$fpgm_1_55 := $fpgm_1_57
-$fpgm_1_55 := $fpgm_1_56 - $fpgm_1_55
-$fpgm_1_56 := $fpgm_1_55
-$fpgm_1_57 := 38
-$fpgm_1_56 := $fpgm_1_57 - $fpgm_1_56
-$fpgm_1_57 := 4
-$fpgm_1_57 := $fpgm_1_56
-$fpgm_1_56 := $fpgm_1_53
-$fpgm_1_54 := $fpgm_1_55
-$fpgm_1_55 := $fpgm_1_56
-$fpgm_1_53 := $fpgm_1_57
-$fpgm_1_57 := $fpgm_1_56
-$fpgm_1_56 := $fpgm_1_55
-$fpgm_1_55 := $fpgm_1_57
-SCFS($fpgm_1_56,$fpgm_1_56)
-SCFS($fpgm_1_55,arg$2)
-RET
+  <not executed, no IR>
 
 Function #2
-$fpgm_2_24 := cvt_table[arg$0]
-$fpgm_2_25 := $fpgm_2_24
-$fpgm_2_24 := $fpgm_2_23
-$fpgm_2_23 := $fpgm_2_25
-$fpgm_2_24 := GC_0(arg$1)
-$fpgm_2_23 := $fpgm_2_24 + $fpgm_2_23
-$fpgm_2_24 := 32
-$fpgm_2_23 := $fpgm_2_24 - $fpgm_2_23
-$fpgm_2_24 := $fpgm_2_23
-$fpgm_2_25 := 70
-$fpgm_2_24 := $fpgm_2_25 + $fpgm_2_24
-$fpgm_2_25 := 4
-$fpgm_2_25 := $fpgm_2_24
-$fpgm_2_24 := $fpgm_2_21
-$fpgm_2_22 := $fpgm_2_23
-$fpgm_2_23 := $fpgm_2_24
-$fpgm_2_21 := $fpgm_2_25
-$fpgm_2_25 := $fpgm_2_24
-$fpgm_2_24 := $fpgm_2_23
-$fpgm_2_23 := $fpgm_2_25
-SCFS($fpgm_2_24,$fpgm_2_24)
-SCFS($fpgm_2_23,arg$2)
-RET
+  <not executed, no IR>
 
 Function #3
-$fpgm_3_41 := cvt_table[arg$0]
-$fpgm_3_42 := $fpgm_3_41
-$fpgm_3_41 := $fpgm_3_40
-$fpgm_3_40 := $fpgm_3_42
-$fpgm_3_41 := GC_0(arg$1)
-$fpgm_3_42 := $fpgm_3_41
-$fpgm_3_41 := $fpgm_3_40
-$fpgm_3_40 := $fpgm_3_42
-$fpgm_3_40 := $fpgm_3_41 - $fpgm_3_40
-$fpgm_3_41 := 32
-$fpgm_3_40 := $fpgm_3_41 + $fpgm_3_40
-$fpgm_3_41 := $fpgm_3_40
-$fpgm_3_42 := 38
-$fpgm_3_41 := $fpgm_3_42 - $fpgm_3_41
-$fpgm_3_42 := 32
-$fpgm_3_41 := $fpgm_3_42 - $fpgm_3_41
-$fpgm_3_42 := 4
-$fpgm_3_42 := $fpgm_3_41
-$fpgm_3_41 := $fpgm_3_38
-$fpgm_3_39 := $fpgm_3_40
-$fpgm_3_40 := $fpgm_3_41
-$fpgm_3_38 := $fpgm_3_42
-$fpgm_3_42 := $fpgm_3_41
-$fpgm_3_41 := $fpgm_3_40
-$fpgm_3_40 := $fpgm_3_42
-SCFS($fpgm_3_41,$fpgm_3_41)
-SCFS($fpgm_3_40,arg$2)
-RET
+  <not executed, no IR>
 
 Function #4
   <not executed, no IR>
@@ -2198,15 +2106,7 @@ Function #5
   <not executed, no IR>
 
 Function #6
-GS[freedom_vector] := 1
-GS[projection_vector] := 1
-GS[rp0] := arg$0
-$fpgm_6_14 := $fpgm_6_13
-ALIGNRP($fpgm_6_14)
-GS[freedom_vector] := 0
-GS[projection_vector] := 0
-ALIGNRP(arg$1)
-RET
+  <not executed, no IR>
 
 Function #7
 $fpgm_7_947 := $fpgm_7_946
@@ -2319,10 +2219,8 @@ MSIRP_0($fpgm_11_743,$fpgm_11_742)
 $fpgm_11_742 := 2
 $fpgm_11_743 := 0
 SFVTL_0($fpgm_11_743,$fpgm_11_742)
-$fpgm_11_742 := 1
-$fpgm_11_743 := 0
-$fpgm_11_742 := 1
-$fpgm_11_743 := 0
+$fpgm_11_742 := GS[freedom_vector_0]
+$fpgm_11_743 := GS[freedom_vector_1]
 RET
 
 Function #12
@@ -2371,11 +2269,9 @@ $fpgm_17_30 := min($fpgm_17_31, $fpgm_17_30)
 $fpgm_17_31 := 4096
 $fpgm_17_30 := $fpgm_17_31 / $fpgm_17_30
 $fpgm_17_29 := $fpgm_17_30 + $fpgm_17_29
-CALL [44, 45, 46, 47]($glyf.onehalf_28, $glyf.onehalf_27)
-$fpgm_17_28 := 1
-$fpgm_17_29 := 0
-$fpgm_17_28 := 1
-$fpgm_17_29 := 0
+CALL 44($glyf.onehalf_28, $glyf.onehalf_27)
+$fpgm_17_28 := GS[projection_vector_0]
+$fpgm_17_29 := GS[projection_vector_1]
 $fpgm_17_29 := abs $fpgm_17_29
 $fpgm_17_30 := $fpgm_17_29
 $fpgm_17_29 := $fpgm_17_28
@@ -2384,6 +2280,8 @@ $fpgm_17_29 := abs $fpgm_17_29
 $fpgm_17_28 := $fpgm_17_29 - $fpgm_17_28
 $fpgm_17_28 := not $fpgm_17_28
 if ($fpgm_17_28) {
+    $fpgm_17_28 := 3
+    $fpgm_17_27 := $fpgm_17_28 - $fpgm_17_27
 }
 RET
 
@@ -2407,6 +2305,7 @@ if ($fpgm_20_30) {
     $fpgm_20_27 := $fpgm_20_29
     cvt_table[$fpgm_20_28] := $fpgm_17_27
     $fpgm_20_27 := 23
+    ROFF()
     MIRP_00100($fpgm_20_27,arg$2)
 } else {
     GS[projection_vector] := 1
@@ -2444,9 +2343,11 @@ if ($fpgm_20_30) {
         $fpgm_20_27 := $fpgm_20_29
         cvt_table[$fpgm_20_28] := $fpgm_17_27
         $fpgm_20_27 := 23
+        ROFF()
         MIRP_00100($fpgm_20_27,arg$2)
     } else {
         $fpgm_20_27 := 23
+        ROFF()
         MIRP_00100($fpgm_20_27,arg$3)
     }
 }
@@ -2463,114 +2364,114 @@ Function #23
   <not executed, no IR>
 
 Function #24
-$fpgm_24_30 := $fpgm_24_29
-$fpgm_24_31 := 3
-$fpgm_24_31 := $fpgm_24_28
-$fpgm_24_31 := cvt_table[$fpgm_24_31]
-$fpgm_24_32 := 25
-$fpgm_24_33 := $fpgm_24_32
-$fpgm_24_32 := $fpgm_24_31
-$fpgm_24_31 := $fpgm_24_33
-cvt_table[$fpgm_24_32] := $fpgm_24_31
-$fpgm_24_30 := cvt_table[$fpgm_24_30]
-$fpgm_24_31 := 26
-$fpgm_24_32 := $fpgm_24_31
-$fpgm_24_31 := $fpgm_24_30
-$fpgm_24_30 := $fpgm_24_32
-cvt_table[$fpgm_24_31] := $fpgm_24_30
-$fpgm_24_29 := cvt_table[arg$0]
-$fpgm_24_29 := NEG $fpgm_24_29
-$fpgm_24_30 := $fpgm_24_29
-$fpgm_24_29 := $fpgm_24_28
-$fpgm_24_28 := $fpgm_24_30
-$fpgm_24_29 := cvt_table[arg$1]
-$fpgm_24_30 := $fpgm_24_29
-$fpgm_24_31 := 3
-$fpgm_24_31 := $fpgm_24_28
-$fpgm_24_30 := $fpgm_24_31 + $fpgm_24_30
-$fpgm_24_30 := ROUND_10($fpgm_24_30)
-$fpgm_24_31 := $fpgm_24_30
-$fpgm_24_32 := 9
-$fpgm_24_33 := $fpgm_24_32
-$fpgm_24_32 := $fpgm_24_31
-$fpgm_24_31 := $fpgm_24_33
-storage_area[$fpgm_24_31] := $fpgm_24_32
-$fpgm_24_31 := $fpgm_24_30
-$fpgm_24_30 := $fpgm_24_29
-$fpgm_24_29 := $fpgm_24_31
-$fpgm_24_30 := ROUND_00($fpgm_24_29)
-$fpgm_24_31 := $fpgm_24_30
-$fpgm_24_30 := $fpgm_24_28
-$fpgm_24_28 := $fpgm_24_29
-$fpgm_24_29 := $fpgm_24_31
-$fpgm_24_30 := ROUND_10($fpgm_24_29)
-$fpgm_24_29 := $fpgm_24_30 + $fpgm_24_29
-$fpgm_24_28 := $fpgm_24_29 - $fpgm_24_28
-$fpgm_24_29 := $fpgm_24_28
-$fpgm_24_30 := 26
-$fpgm_24_31 := $fpgm_24_30
-$fpgm_24_30 := $fpgm_24_28
-$fpgm_24_28 := $fpgm_24_29
-$fpgm_24_29 := $fpgm_24_31
-$fpgm_24_31 := 0
-$fpgm_24_30 := $fpgm_24_31 GT $fpgm_24_30
-if ( not $fpgm_24_30) {
-    $fpgm_24_28 := 26
-    $fpgm_24_29 := 26
-    $fpgm_24_30 := 64
-    $fpgm_24_31 := -32
-    $fpgm_24_32 := 26
-    $fpgm_24_32 := cvt_table[$fpgm_24_32]
-    $fpgm_24_33 := $fpgm_24_32
-    $fpgm_24_34 := $fpgm_24_33
-    $fpgm_24_33 := $fpgm_24_31
-    $fpgm_24_31 := $fpgm_24_32
-    $fpgm_24_32 := $fpgm_24_34
-    $fpgm_24_32 := $fpgm_24_33 EQ $fpgm_24_32
-    if ($fpgm_24_32) {
-        $fpgm_24_32 := $fpgm_24_31
-        $fpgm_24_31 := $fpgm_24_30
-        $fpgm_24_30 := $fpgm_24_32
-        $fpgm_24_31 := 63
+$fpgm_24_127 := $fpgm_24_126
+$fpgm_24_128 := 3
+$fpgm_24_128 := $fpgm_24_125
+$fpgm_24_128 := cvt_table[$fpgm_24_128]
+$fpgm_24_129 := 25
+$fpgm_24_130 := $fpgm_24_129
+$fpgm_24_129 := $fpgm_24_128
+$fpgm_24_128 := $fpgm_24_130
+cvt_table[$fpgm_24_129] := $fpgm_24_128
+$fpgm_24_127 := cvt_table[$fpgm_24_127]
+$fpgm_24_128 := 26
+$fpgm_24_129 := $fpgm_24_128
+$fpgm_24_128 := $fpgm_24_127
+$fpgm_24_127 := $fpgm_24_129
+cvt_table[$fpgm_24_128] := $fpgm_24_127
+$fpgm_24_126 := cvt_table[arg$0]
+$fpgm_24_126 := NEG $fpgm_24_126
+$fpgm_24_127 := $fpgm_24_126
+$fpgm_24_126 := $fpgm_24_125
+$fpgm_24_125 := $fpgm_24_127
+$fpgm_24_126 := cvt_table[arg$1]
+$fpgm_24_127 := $fpgm_24_126
+$fpgm_24_128 := 3
+$fpgm_24_128 := $fpgm_24_125
+$fpgm_24_127 := $fpgm_24_128 + $fpgm_24_127
+$fpgm_24_127 := ROUND_10($fpgm_24_127)
+$fpgm_24_128 := $fpgm_24_127
+$fpgm_24_129 := 9
+$fpgm_24_130 := $fpgm_24_129
+$fpgm_24_129 := $fpgm_24_128
+$fpgm_24_128 := $fpgm_24_130
+storage_area[$fpgm_24_128] := $fpgm_24_129
+$fpgm_24_128 := $fpgm_24_127
+$fpgm_24_127 := $fpgm_24_126
+$fpgm_24_126 := $fpgm_24_128
+$fpgm_24_127 := ROUND_00($fpgm_24_126)
+$fpgm_24_128 := $fpgm_24_127
+$fpgm_24_127 := $fpgm_24_125
+$fpgm_24_125 := $fpgm_24_126
+$fpgm_24_126 := $fpgm_24_128
+$fpgm_24_127 := ROUND_10($fpgm_24_126)
+$fpgm_24_126 := $fpgm_24_127 + $fpgm_24_126
+$fpgm_24_125 := $fpgm_24_126 - $fpgm_24_125
+$fpgm_24_126 := $fpgm_24_125
+$fpgm_24_127 := 26
+$fpgm_24_128 := $fpgm_24_127
+$fpgm_24_127 := $fpgm_24_125
+$fpgm_24_125 := $fpgm_24_126
+$fpgm_24_126 := $fpgm_24_128
+$fpgm_24_128 := 0
+$fpgm_24_127 := $fpgm_24_128 GT $fpgm_24_127
+if ( not $fpgm_24_127) {
+    $fpgm_24_125 := 26
+    $fpgm_24_126 := 26
+    $fpgm_24_127 := 64
+    $fpgm_24_128 := -32
+    $fpgm_24_129 := 26
+    $fpgm_24_129 := cvt_table[$fpgm_24_129]
+    $fpgm_24_130 := $fpgm_24_129
+    $fpgm_24_131 := $fpgm_24_130
+    $fpgm_24_130 := $fpgm_24_128
+    $fpgm_24_128 := $fpgm_24_129
+    $fpgm_24_129 := $fpgm_24_131
+    $fpgm_24_129 := $fpgm_24_130 EQ $fpgm_24_129
+    if ($fpgm_24_129) {
+        $fpgm_24_129 := $fpgm_24_128
+        $fpgm_24_128 := $fpgm_24_127
+        $fpgm_24_127 := $fpgm_24_129
+        $fpgm_24_128 := 63
     } else {
-        $fpgm_24_32 := $fpgm_24_31
-        $fpgm_24_31 := $fpgm_24_30
-        $fpgm_24_30 := $fpgm_24_32
+        $fpgm_24_129 := $fpgm_24_128
+        $fpgm_24_128 := $fpgm_24_127
+        $fpgm_24_127 := $fpgm_24_129
     }
-    $fpgm_24_30 := $fpgm_24_31 - $fpgm_24_30
-    cvt_table[$fpgm_24_29] := $fpgm_24_30
+    $fpgm_24_127 := $fpgm_24_128 - $fpgm_24_127
+    cvt_table[$fpgm_24_126] := $fpgm_24_127
 } else {
-    $fpgm_24_29 := 20
-    $fpgm_24_30 := 0
-    $fpgm_24_31 := $fpgm_24_30
-    $fpgm_24_30 := $fpgm_24_28
-    $fpgm_24_28 := $fpgm_24_29
-    $fpgm_24_29 := $fpgm_24_31
-    $fpgm_24_29 := $fpgm_24_30 GT $fpgm_24_29
-        if ( not $fpgm_24_29) {
-        $fpgm_24_28 := 25
-        $fpgm_24_29 := 64
-        $fpgm_24_30 := 32
-        $fpgm_24_31 := 25
-        $fpgm_24_31 := cvt_table[$fpgm_24_31]
-        $fpgm_24_32 := $fpgm_24_31
-        $fpgm_24_33 := $fpgm_24_32
-        $fpgm_24_32 := $fpgm_24_30
-        $fpgm_24_30 := $fpgm_24_31
-        $fpgm_24_31 := $fpgm_24_33
-        $fpgm_24_31 := $fpgm_24_32 EQ $fpgm_24_31
-            if ($fpgm_24_31) {
-            $fpgm_24_31 := $fpgm_24_30
-            $fpgm_24_30 := $fpgm_24_29
-            $fpgm_24_29 := $fpgm_24_31
-            $fpgm_24_30 := 63
+    $fpgm_24_126 := 20
+    $fpgm_24_127 := 0
+    $fpgm_24_128 := $fpgm_24_127
+    $fpgm_24_127 := $fpgm_24_125
+    $fpgm_24_125 := $fpgm_24_126
+    $fpgm_24_126 := $fpgm_24_128
+    $fpgm_24_126 := $fpgm_24_127 GT $fpgm_24_126
+        if ( not $fpgm_24_126) {
+        $fpgm_24_125 := 25
+        $fpgm_24_126 := 64
+        $fpgm_24_127 := 32
+        $fpgm_24_128 := 25
+        $fpgm_24_128 := cvt_table[$fpgm_24_128]
+        $fpgm_24_129 := $fpgm_24_128
+        $fpgm_24_130 := $fpgm_24_129
+        $fpgm_24_129 := $fpgm_24_127
+        $fpgm_24_127 := $fpgm_24_128
+        $fpgm_24_128 := $fpgm_24_130
+        $fpgm_24_128 := $fpgm_24_129 EQ $fpgm_24_128
+            if ($fpgm_24_128) {
+            $fpgm_24_128 := $fpgm_24_127
+            $fpgm_24_127 := $fpgm_24_126
+            $fpgm_24_126 := $fpgm_24_128
+            $fpgm_24_127 := 63
         } else {
-            $fpgm_24_31 := $fpgm_24_30
-            $fpgm_24_30 := $fpgm_24_29
-            $fpgm_24_29 := $fpgm_24_31
+            $fpgm_24_128 := $fpgm_24_127
+            $fpgm_24_127 := $fpgm_24_126
+            $fpgm_24_126 := $fpgm_24_128
         }
-        $fpgm_24_29 := $fpgm_24_30 - $fpgm_24_29
-        cvt_table[$fpgm_24_28] := $fpgm_24_29
+        $fpgm_24_126 := $fpgm_24_127 - $fpgm_24_126
+        cvt_table[$fpgm_24_125] := $fpgm_24_126
     }
 }
 RET
@@ -2603,67 +2504,10 @@ if ($fpgm_31_922) {
 RET
 
 Function #32
-GS[freedom_vector] := 1
-GS[projection_vector] := 1
-$fpgm_32_263 := $fpgm_32_262
-$fpgm_32_264 := 3
-$fpgm_32_264 := $fpgm_32_261
-$fpgm_32_265 := $fpgm_32_264
-$fpgm_32_264 := $fpgm_32_263
-$fpgm_32_263 := $fpgm_32_265
-MD_0($fpgm_32_263,$fpgm_32_264)
-$fpgm_32_264 := 64
-$fpgm_32_263 := $fpgm_32_264 + $fpgm_32_263
-$fpgm_32_264 := 32
-$fpgm_32_263 := $fpgm_32_264 * $fpgm_32_263
-$fpgm_32_264 := $fpgm_32_263
-$fpgm_32_265 := 0
-$fpgm_32_264 := $fpgm_32_265 GT $fpgm_32_264
-if ($fpgm_32_264) {
-    $fpgm_32_264 := $fpgm_32_263
-    $fpgm_32_263 := $fpgm_32_262
-    $fpgm_32_262 := $fpgm_32_264
-    $fpgm_32_264 := 2
-    $fpgm_32_264 := $fpgm_32_262
-    SHPIX(arg$0)
-    $fpgm_32_263 := $fpgm_32_262
-    $fpgm_32_262 := $fpgm_32_261
-    $fpgm_32_261 := $fpgm_32_263
-    $fpgm_32_263 := 2
-    $fpgm_32_263 := $fpgm_32_261
-    $fpgm_32_263 := NEG $fpgm_32_263
-    SHPIX(arg$1)
-    GS[freedom_vector] := 0
-    GS[projection_vector] := 0
-    $fpgm_32_262 := $fpgm_32_261
-    $fpgm_32_261 := $fpgm_32_259
-    $fpgm_32_259 := $fpgm_32_260
-    $fpgm_32_260 := $fpgm_32_262
-    $fpgm_32_260 := $fpgm_32_261 * $fpgm_32_260
-    SHPIX(arg$2)
-}
-GS[freedom_vector] := 1
-GS[projection_vector] := 1
-RET
+  <not executed, no IR>
 
 Function #33
-$fpgm_33_56 := PPEM_Y
-$fpgm_33_57 := 100
-$fpgm_33_56 := $fpgm_33_57 LE $fpgm_33_56
-if ($fpgm_33_56) {
-    $fpgm_33_55 := cvt_table[arg$0]
-    $fpgm_33_55 := ROUND_01($fpgm_33_55)
-    $fpgm_33_56 := 9
-    $fpgm_33_56 := storage_area[$fpgm_33_56]
-    $fpgm_33_55 := $fpgm_33_56 + $fpgm_33_55
-    $fpgm_33_56 := $fpgm_33_55
-    $fpgm_33_55 := $fpgm_33_53
-    $fpgm_33_53 := $fpgm_33_54
-    $fpgm_33_54 := $fpgm_33_56
-    GS[rp0] := arg$2
-    MSIRP_0($fpgm_33_55,arg$1)
-}
-RET
+  <not executed, no IR>
 
 Function #34
   <not executed, no IR>
@@ -2675,81 +2519,29 @@ Function #36
   <not executed, no IR>
 
 Function #37
-$fpgm_37_8 := $fpgm_37_7
-$fpgm_37_9 := 1
-$fpgm_37_8 := 1 + 16
-GS[freedom_vector] := 1
-GS[projection_vector] := 1
-GS[rp0] := $fpgm_37_8
-$fpgm_37_8 := $fpgm_37_7
-ALIGNRP($fpgm_37_8)
-GS[freedom_vector] := 0
-GS[projection_vector] := 0
-ALIGNRP(arg$0)
-RET
+  <not executed, no IR>
 
 Function #38
-$fpgm_38_27 := $fpgm_38_26
-$fpgm_38_28 := 1
-$fpgm_38_27 := 1 - 35
-GS[freedom_vector] := 1
-GS[projection_vector] := 1
-GS[rp0] := $fpgm_38_27
-$fpgm_38_27 := $fpgm_38_26
-ALIGNRP($fpgm_38_27)
-GS[freedom_vector] := 0
-GS[projection_vector] := 0
-ALIGNRP(arg$0)
-RET
+  <not executed, no IR>
 
 Function #39
-$fpgm_39_7 := 43
-CALL 43($glyf.aogonek_6, $glyf.aogonek_5, $glyf.aogonek_4, $glyf.aogonek_3)
-$fpgm_39_3 := 42
-CALL 42($glyf.aogonek_1)
-RET
+  <not executed, no IR>
 
 Function #40
   <not executed, no IR>
 
 Function #41
-MIAP_0(arg$0,arg$1)
-$fpgm_41_5 := 42
-LOOPCALL_2 42($glyf.upsilondieresistonos_3)
-RET
+  <not executed, no IR>
 
 Function #42
-SHC_1(arg$0)
-RET
+  <not executed, no IR>
 
 Function #43
-GS[round_state] := Super(arg$0)
-$fpgm_43_20 := 547
-$fpgm_43_21 := $fpgm_43_20
-$fpgm_43_20 := $fpgm_43_19
-$fpgm_43_19 := $fpgm_43_21
-cvt_table[$fpgm_43_20] := arg$1
-GS[rp0] := arg$2
-$fpgm_43_18 := $fpgm_43_17
-$fpgm_43_19 := 547
-$fpgm_43_19 := cvt_table[$fpgm_43_19]
-$fpgm_43_20 := $fpgm_43_19
-$fpgm_43_21 := 0
-$fpgm_43_20 := $fpgm_43_21 LT $fpgm_43_20
-if ($fpgm_43_20) {
-    $fpgm_43_20 := 1
-    $fpgm_43_19 := $fpgm_43_20 - $fpgm_43_19
-}
-MSIRP_0($fpgm_43_19,$fpgm_43_18)
-MDAP_1(arg$3)
-GS[round_state] := RoundState_G
-RET
+  <not executed, no IR>
 
 Function #44
-$fpgm_44_27 := 1
-$fpgm_44_28 := 0
-$fpgm_44_27 := 1
-$fpgm_44_28 := 0
+$fpgm_44_27 := GS[projection_vector_0]
+$fpgm_44_28 := GS[projection_vector_1]
 $fpgm_44_28 := abs $fpgm_44_28
 $fpgm_44_29 := $fpgm_44_28
 $fpgm_44_28 := $fpgm_44_27
@@ -2764,10 +2556,8 @@ Function #45
 $fpgm_45_28 := 128
 $fpgm_45_27 := $fpgm_45_28 LE $fpgm_45_27
 if ($fpgm_45_27) {
-    $fpgm_45_27 := 1
-    $fpgm_45_28 := 0
-    $fpgm_45_27 := 1
-    $fpgm_45_28 := 0
+    $fpgm_45_27 := GS[projection_vector_0]
+    $fpgm_45_28 := GS[projection_vector_1]
     $fpgm_45_28 := abs $fpgm_45_28
     $fpgm_45_29 := $fpgm_45_28
     $fpgm_45_28 := $fpgm_45_27
@@ -2790,10 +2580,8 @@ Function #46
 $fpgm_46_28 := 192
 $fpgm_46_27 := $fpgm_46_28 LE $fpgm_46_27
 if ($fpgm_46_27) {
-    $fpgm_46_27 := 1
-    $fpgm_46_28 := 0
-    $fpgm_46_27 := 1
-    $fpgm_46_28 := 0
+    $fpgm_46_27 := GS[projection_vector_0]
+    $fpgm_46_28 := GS[projection_vector_1]
     $fpgm_46_28 := abs $fpgm_46_28
     $fpgm_46_29 := $fpgm_46_28
     $fpgm_46_28 := $fpgm_46_27
@@ -2813,10 +2601,8 @@ $fpgm_46_27 := $fpgm_46_28 + $fpgm_46_27
 RET
 
 Function #47
-$fpgm_47_29 := 1
-$fpgm_47_30 := 0
-$fpgm_47_29 := 1
-$fpgm_47_30 := 0
+$fpgm_47_29 := GS[projection_vector_0]
+$fpgm_47_30 := GS[projection_vector_1]
 $fpgm_47_30 := abs $fpgm_47_30
 $fpgm_47_31 := $fpgm_47_30
 $fpgm_47_30 := $fpgm_47_29
@@ -2874,26 +2660,10 @@ if ($fpgm_51_604) {
 RET
 
 Function #52
-$fpgm_52_28 := PPEM_Y
-$fpgm_52_27 := $fpgm_52_28 GE $fpgm_52_27
-$fpgm_52_28 := $fpgm_52_27
-$fpgm_52_27 := $fpgm_52_26
-$fpgm_52_26 := $fpgm_52_28
-$fpgm_52_28 := PPEM_Y
-$fpgm_52_27 := $fpgm_52_28 LE $fpgm_52_27
-$fpgm_52_26 := $fpgm_52_27 AND $fpgm_52_26
-if ($fpgm_52_26) {
-    SHPIX(arg$3)
-}
-RET
+  <not executed, no IR>
 
 Function #53
-$fpgm_53_5 := PPEM_X
-$fpgm_53_4 := $fpgm_53_5 EQ $fpgm_53_4
-if ($fpgm_53_4) {
-    SHPIX(arg$2)
-}
-RET
+  <not executed, no IR>
 
 Function #55
 $fpgm_55_1016 := 19
@@ -2916,18 +2686,390 @@ if ($fpgm_56_1015) {
 RET
 
 Function #57
-$fpgm_57_8 := PPEM_Y
-$fpgm_57_7 := $fpgm_57_8 EQ $fpgm_57_7
-$fpgm_57_8 := 18
-$fpgm_57_8 := storage_area[$fpgm_57_8]
-$fpgm_57_8 := not $fpgm_57_8
-$fpgm_57_7 := $fpgm_57_8 AND $fpgm_57_7
-if ($fpgm_57_7) {
-    SHPIX(arg$2)
+  <not executed, no IR>
+
+Function #58
+  <not executed, no IR>
+
+Function #59
+  <not executed, no IR>
+
+Function #60
+  <not executed, no IR>
+
+Function #61
+  <not executed, no IR>
+
+Function #62
+  <not executed, no IR>
+
+Function #63
+  <not executed, no IR>
+
+Function #64
+  <not executed, no IR>
+
+Function #65
+  <not executed, no IR>
+
+Function #84
+$fpgm_84_1 := 2
+$fpgm_84_2 := 0
+storage_area[$fpgm_84_2] := $fpgm_84_1
+$fpgm_84_1 := 35
+$fpgm_84_2 := 1
+$fpgm_84_2 := GETINFO($fpgm_84_2)
+$fpgm_84_1 := $fpgm_84_2 LE $fpgm_84_1
+$fpgm_84_2 := 64
+$fpgm_84_3 := 1
+$fpgm_84_3 := GETINFO($fpgm_84_3)
+$fpgm_84_2 := $fpgm_84_3 GE $fpgm_84_2
+$fpgm_84_1 := $fpgm_84_2 AND $fpgm_84_1
+if ($fpgm_84_1) {
+    $fpgm_84_1 := 4096
+    $fpgm_84_2 := 32
+    $fpgm_84_2 := GETINFO($fpgm_84_2)
+    $fpgm_84_1 := $fpgm_84_2 EQ $fpgm_84_1
+    if ($fpgm_84_1) {
+        $fpgm_84_1 := 2
+        $fpgm_84_2 := 1
+        $fpgm_84_3 := 2
+        $fpgm_84_3 := storage_area[$fpgm_84_3]
+        $fpgm_84_2 := $fpgm_84_3 + $fpgm_84_2
+        storage_area[$fpgm_84_2] := $fpgm_84_1
+    }
+    $fpgm_84_1 := 36
+    $fpgm_84_2 := 1
+    $fpgm_84_2 := GETINFO($fpgm_84_2)
+    $fpgm_84_1 := $fpgm_84_2 LE $fpgm_84_1
+    if ($fpgm_84_1) {
+        $fpgm_84_1 := 8192
+        $fpgm_84_2 := 64
+        $fpgm_84_2 := GETINFO($fpgm_84_2)
+        $fpgm_84_1 := $fpgm_84_2 EQ $fpgm_84_1
+            if ($fpgm_84_1) {
+            $fpgm_84_1 := 2
+            $fpgm_84_2 := 2
+            $fpgm_84_3 := 2
+            $fpgm_84_3 := storage_area[$fpgm_84_3]
+            $fpgm_84_2 := $fpgm_84_3 + $fpgm_84_2
+            storage_area[$fpgm_84_2] := $fpgm_84_1
+            $fpgm_84_1 := 36
+            $fpgm_84_2 := 1
+            $fpgm_84_2 := GETINFO($fpgm_84_2)
+            $fpgm_84_1 := $fpgm_84_2 EQ $fpgm_84_1
+                    if ($fpgm_84_1) {
+                $fpgm_84_1 := 2
+                $fpgm_84_2 := 32
+                $fpgm_84_3 := 2
+                $fpgm_84_3 := storage_area[$fpgm_84_3]
+                $fpgm_84_2 := $fpgm_84_3 + $fpgm_84_2
+                storage_area[$fpgm_84_2] := $fpgm_84_1
+                GS[freedom_vector] := 0
+                GS[projection_vector] := 0
+                $fpgm_84_1 := PPEM_Y
+                GS[freedom_vector] := 1
+                GS[projection_vector] := 1
+                $fpgm_84_2 := PPEM_X
+                $fpgm_84_1 := $fpgm_84_2 GT $fpgm_84_1
+                            if ($fpgm_84_1) {
+                    $fpgm_84_1 := 2
+                    $fpgm_84_2 := 8
+                    $fpgm_84_3 := 2
+                    $fpgm_84_3 := storage_area[$fpgm_84_3]
+                    $fpgm_84_2 := $fpgm_84_3 + $fpgm_84_2
+                    storage_area[$fpgm_84_2] := $fpgm_84_1
+                }
+            } else {
+                $fpgm_84_1 := 16384
+                $fpgm_84_2 := 128
+                $fpgm_84_2 := GETINFO($fpgm_84_2)
+                $fpgm_84_1 := $fpgm_84_2 EQ $fpgm_84_1
+                                if ($fpgm_84_1) {
+                    $fpgm_84_1 := 2
+                    $fpgm_84_2 := 4
+                    $fpgm_84_3 := 2
+                    $fpgm_84_3 := storage_area[$fpgm_84_3]
+                    $fpgm_84_2 := $fpgm_84_3 + $fpgm_84_2
+                    storage_area[$fpgm_84_2] := $fpgm_84_1
+                }
+                $fpgm_84_1 := 16384
+                $fpgm_84_2 := 128
+                $fpgm_84_1 := 128 * 16384
+                $fpgm_84_2 := 256
+                $fpgm_84_2 := GETINFO($fpgm_84_2)
+                $fpgm_84_1 := $fpgm_84_2 EQ $fpgm_84_1
+                                if ($fpgm_84_1) {
+                    $fpgm_84_1 := 2
+                    $fpgm_84_2 := 8
+                    $fpgm_84_3 := 2
+                    $fpgm_84_3 := storage_area[$fpgm_84_3]
+                    $fpgm_84_2 := $fpgm_84_3 + $fpgm_84_2
+                    storage_area[$fpgm_84_2] := $fpgm_84_1
+                }
+                $fpgm_84_1 := 16384
+                $fpgm_84_2 := 256
+                $fpgm_84_1 := 256 * 16384
+                $fpgm_84_2 := 512
+                $fpgm_84_2 := GETINFO($fpgm_84_2)
+                $fpgm_84_1 := $fpgm_84_2 EQ $fpgm_84_1
+                                if ($fpgm_84_1) {
+                    $fpgm_84_1 := 2
+                    $fpgm_84_2 := 16
+                    $fpgm_84_3 := 2
+                    $fpgm_84_3 := storage_area[$fpgm_84_3]
+                    $fpgm_84_2 := $fpgm_84_3 + $fpgm_84_2
+                    storage_area[$fpgm_84_2] := $fpgm_84_1
+                }
+                $fpgm_84_1 := 16384
+                $fpgm_84_2 := 512
+                $fpgm_84_1 := 512 * 16384
+                $fpgm_84_2 := 1024
+                $fpgm_84_2 := GETINFO($fpgm_84_2)
+                $fpgm_84_1 := $fpgm_84_2 EQ $fpgm_84_1
+                                if ($fpgm_84_1) {
+                    $fpgm_84_1 := 2
+                    $fpgm_84_2 := 64
+                    $fpgm_84_3 := 2
+                    $fpgm_84_3 := storage_area[$fpgm_84_3]
+                    $fpgm_84_2 := $fpgm_84_3 + $fpgm_84_2
+                    storage_area[$fpgm_84_2] := $fpgm_84_1
+                }
+            }
+        }
+    }
 }
 RET
 
-Function #58
-$fpgm_58_113 := 18
-$fpgm_58_113 := storage_area[$fpgm_58_113]
-$fpgm_58_113 := not $fpgm_58_113
+Function #85
+  <not executed, no IR>
+
+glyf.onehalf:
+$glyf.onehalf_1 := 6
+$glyf.onehalf_2 := 17
+$glyf.onehalf_3 := 1
+$glyf.onehalf_4 := 246
+$glyf.onehalf_5 := 17
+$glyf.onehalf_6 := 1
+$glyf.onehalf_7 := 47
+$glyf.onehalf_8 := 44
+$glyf.onehalf_9 := 51
+$glyf.onehalf_10 := 33
+$glyf.onehalf_11 := 63
+$glyf.onehalf_12 := 38
+$glyf.onehalf_13 := 68
+$glyf.onehalf_14 := 33
+$glyf.onehalf_15 := 84
+$glyf.onehalf_16 := 33
+$glyf.onehalf_17 := 172
+$glyf.onehalf_18 := 40
+$glyf.onehalf_19 := 188
+$glyf.onehalf_20 := 40
+$glyf.onehalf_21 := 236
+$glyf.onehalf_22 := 40
+$glyf.onehalf_23 := 8
+$glyf.onehalf_24 := 2
+$glyf.onehalf_25 := 3
+$glyf.onehalf_26 := 3
+$glyf.onehalf_27 := 666
+$glyf.onehalf_28 := 0
+$glyf.onehalf_29 := 1
+$glyf.onehalf_30 := 20
+$glyf.onehalf_31 := 0
+$glyf.onehalf_32 := 0
+$glyf.onehalf_33 := 1
+$glyf.onehalf_34 := 40
+$glyf.onehalf_35 := 41
+$glyf.onehalf_36 := 15
+$glyf.onehalf_37 := 16
+$glyf.onehalf_38 := 17
+$glyf.onehalf_39 := 3
+$glyf.onehalf_40 := 27
+$glyf.onehalf_41 := 14
+$glyf.onehalf_42 := 0
+$glyf.onehalf_43 := 3
+$glyf.onehalf_44 := 1
+$glyf.onehalf_45 := 2
+$glyf.onehalf_46 := 4
+$glyf.onehalf_47 := 44
+$glyf.onehalf_48 := 43
+$glyf.onehalf_49 := 11
+$glyf.onehalf_50 := 12
+$glyf.onehalf_51 := 4
+$glyf.onehalf_52 := 5
+$glyf.onehalf_53 := 8
+$glyf.onehalf_54 := 7
+$glyf.onehalf_55 := 28
+$glyf.onehalf_56 := 24
+$glyf.onehalf_57 := 27
+$glyf.onehalf_58 := 7
+$glyf.onehalf_59 := 232
+$glyf.onehalf_60 := 8
+$glyf.onehalf_61 := 675
+$glyf.onehalf_62 := 11
+$glyf.onehalf_63 := 4
+$glyf.onehalf_64 := 13
+$glyf.onehalf_65 := 287
+$glyf.onehalf_66 := 11
+$glyf.onehalf_67 := 12
+$glyf.onehalf_68 := 58
+$glyf.onehalf_69 := 2
+$glyf.onehalf_70 := 1
+$glyf.onehalf_71 := 1
+$glyf.onehalf_72 := 31
+$glyf.onehalf_73 := 27
+$glyf.onehalf_74 := 47
+$glyf.onehalf_75 := 27
+$glyf.onehalf_76 := 63
+$glyf.onehalf_77 := 27
+$glyf.onehalf_78 := 3
+$glyf.onehalf_79 := 27
+$glyf.onehalf_80 := 77
+$glyf.onehalf_81 := 24
+$glyf.onehalf_82 := 609
+$glyf.onehalf_83 := 31
+$glyf.onehalf_84 := 287
+$glyf.onehalf_85 := 40
+$glyf.onehalf_86 := 609
+$glyf.onehalf_87 := 14
+$glyf.onehalf_88 := 41
+$glyf.onehalf_89 := 609
+$glyf.onehalf_90 := 42
+$glyf.onehalf_91 := 42
+$glyf.onehalf_92 := 14
+$glyf.onehalf_93 := 39
+$glyf.onehalf_94 := 0
+$glyf.onehalf_95 := 0
+$glyf.onehalf_96 := 3
+$glyf.onehalf_97 := 9
+$glyf.onehalf_98 := 14
+$glyf.onehalf_99 := 39
+$glyf.onehalf_100 := 27
+$glyf.onehalf_101 := 611
+$glyf.onehalf_102 := 28
+$glyf.onehalf_103 := 285
+$glyf.onehalf_104 := 21
+$glyf.onehalf_105 := 41
+$glyf.onehalf_106 := 34
+$glyf.onehalf_107 := 58
+$glyf.onehalf_108 := 42
+$glyf.onehalf_109 := 42
+$glyf.onehalf_110 := 41
+$glyf.onehalf_111 := 105
+$glyf.onehalf_112 := 44
+$glyf.onehalf_113 := 5
+$glyf.onehalf_114 := 4
+$glyf.onehalf_115 := 12
+$glyf.onehalf_116 := 13
+$glyf.onehalf_117 := 41
+$glyf.onehalf_118 := 4
+$glyf.onehalf_119 := 8
+$glyf.onehalf_120 := 7
+$glyf.onehalf_121 := 203
+$glyf.onehalf_122 := 4
+$glyf.onehalf_123 := 324
+$glyf.onehalf_124 := 43
+$glyf.onehalf_125 := 87
+$glyf.onehalf_126 := 104
+$glyf.onehalf_127 := 24
+CALL 24($glyf.onehalf_126, $glyf.onehalf_125, $glyf.onehalf_124, $glyf.onehalf_123, $glyf.onehalf_122)
+GS[rp0] := arg$2
+MIRP_10110(arg$3,arg$4)
+MIRP_10110(arg$5,arg$6)
+ALIGNRP(arg$7)
+GS[rp0] := arg$8
+MIRP_11101(arg$9,arg$10)
+ALIGNRP(arg$11)
+GS[rp0] := arg$12
+ALIGNRP(arg$13)
+GS[rp0] := arg$14
+MIRP_10110(arg$15,arg$16)
+ALIGNRP(arg$17)
+GS[rp0] := arg$18
+MIRP_10100(arg$19,arg$20)
+MIRP_01101(arg$21,arg$22)
+MIRP_11101(arg$23,arg$24)
+MIRP_01101(arg$25,arg$26)
+MIRP_00100(arg$27,arg$28)
+GS[freedom_vector] := 0
+GS[projection_vector] := 0
+MIAP_1(arg$29,arg$30)
+ALIGNRP(arg$31)
+GS[rp0] := arg$32
+MIRP_10100(arg$33,arg$34)
+ALIGNRP(arg$35)
+GS[rp0] := arg$36
+MIRP_01101(arg$37,arg$38)
+GS[rp0] := arg$39
+MIRP_01101(arg$40,arg$41)
+MIRP_11101(arg$42,arg$43)
+MIRP_11101(arg$44,arg$45)
+MIRP_10100(arg$46,arg$47)
+DELTAP1(arg$49,arg$50,arg$51,arg$52,arg$53,arg$54)
+MIAP_1(arg$55,arg$56)
+ALIGNRP(arg$57)
+MIRP_10100(arg$58,arg$59)
+ALIGNRP(arg$60)
+MIRP_11101(arg$61,arg$62)
+ALIGNRP(arg$63)
+GS[rp0] := arg$64
+MIRP_10100(arg$65,arg$66)
+MIRP_11101(arg$67,arg$68)
+GS[rp1] := arg$69
+GS[rp2] := arg$70
+IP(arg$71)
+GS[rp1] := arg$72
+GS[rp2] := arg$73
+IP(arg$74)
+GS[freedom_vector] := 1
+GS[projection_vector] := 1
+GS[rp1] := arg$75
+GS[rp2] := arg$76
+IP(arg$77)
+GS[rp1] := arg$78
+GS[rp2] := arg$79
+SLOOP(arg$80)
+IP(arg$81,arg$82,arg$83,arg$84)
+GS[rp1] := arg$85
+GS[rp2] := arg$86
+SLOOP(arg$87)
+IP(arg$88,arg$89,arg$90)
+GS[rp1] := arg$91
+IP(arg$92)
+SDPVTL_1(arg$93,arg$94)
+MDAP_0(arg$95)
+CALL 20($glyf.onehalf_29, $glyf.onehalf_28, $glyf.onehalf_27, $glyf.onehalf_26, $glyf.onehalf_25, $glyf.onehalf_24)
+GS[round_state] := RoundState_DTG
+GS[rp0] := arg$4
+MDRP_00100(arg$5)
+$glyf.onehalf_24 := 6
+$glyf.onehalf_25 := 2
+$glyf.onehalf_25 := storage_area[$glyf.onehalf_25]
+$glyf.onehalf_24 := $glyf.onehalf_25 EQ $glyf.onehalf_24
+if ($glyf.onehalf_24) {
+    $glyf.onehalf_24 := 38
+    $glyf.onehalf_25 := 31
+    $glyf.onehalf_26 := 42
+    $glyf.onehalf_27 := 17
+    $glyf.onehalf_28 := 31
+    $glyf.onehalf_29 := 41
+    GS[freedom_vector] := 0
+    GS[projection_vector] := 0
+    GS[rp1] := $glyf.onehalf_29
+    GS[rp2] := $glyf.onehalf_28
+    IP($glyf.onehalf_27)
+    GS[rp1] := $glyf.onehalf_26
+    GS[rp2] := $glyf.onehalf_25
+    IP($glyf.onehalf_24)
+}
+IUP_1()
+IUP_0()
+GS[freedom_vector] := 1
+GS[projection_vector] := 1
+DELTAP1(arg$7,arg$8,arg$9,arg$10,arg$11,arg$12,arg$13,arg$14,arg$15,arg$16,arg$17,arg$18,arg$19,arg$20,arg$21,arg$22)
+GS[freedom_vector] := 0
+GS[projection_vector] := 0
+DELTAP1(arg$24,arg$25)
+DELTAP2(arg$27,arg$28)
+RET
+

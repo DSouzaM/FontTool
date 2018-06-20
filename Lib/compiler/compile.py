@@ -21,7 +21,7 @@ def generate_ttx(ori_ttx_file,out_ttx_file,font_bytecode):
                         for line in font_bytecode.fpgm[fn]:
                             string = string + '      ' + line + '\n'
                     child_l2.text = string
-
+ 		    pass
 
         if child_l1.tag == 'prep':
             for child_l2 in child_l1:
@@ -146,13 +146,15 @@ class compiler:
 
         for f in ast.program_functions:
 	    f.arguments = ast.fpgm2args[f.function_num]
+	    print f.function_num
+	    f.stack_effect = ast.fpgm2stack_effect[f.function_num]
 	    bp.generate_code(f)
 
         if not ast.prep_function is None:
 	    bp.generate_code(ast.prep_function) 
 
-	for f in ast.glyph_functions:
-	    bp.generate_code(f)
+	#for f in ast.glyph_functions:
+	#    bp.generate_code(f)
 
 	sys.stdout.write(CURSOR_UP)
 	sys.stdout.write(ERASE)

@@ -48,7 +48,10 @@ class bytecode_producer:
 
         def __str__(self):
             if self.instruction == "PUSH":
-                string = "PUSH[ ]\n"
+		if int(self.data[0].value) >=0 and int(self.data[0].value)<=255:
+		    string = "PUSHB[ ]\n"
+		else:
+		    string = "PUSHW[ ]\n"
                 for d in self.data:
                     string = string + '      ' + str(d.value)
            
@@ -136,13 +139,15 @@ class bytecode_producer:
 		    "MIAP":"MIAP",
 		    "MIRP":"MIRP",
 		    "MSIRP":"MSIRP",
+		    "ROFF" :"ROFF[ ]",
 		    "SCFS" : "SCFS[ ]",
 		    "SDB" : "SDB[ ]",
-		    "SDPVTL":"SDPVTL[ ]",
+		    "SDPVTL":"SDPVTL",
 		    "SDS":"SDS[ ]",
 		    "SFVFS":"SFVFS[ ]",
 		    "SFVTL":"SFVTL",
 		    "SFVTPV":"SFVTPV[ ]",
+		    "SPVFS" :"SPVFS[ ]",
 		    "SPVTL" :"SPVTL",
 		    "SHC"  :"SHC",
 		    "SHP"  :"SHP",
@@ -152,6 +157,9 @@ class bytecode_producer:
 		    "SMD"  :"SMD[ ]",
 		    "GETINFO":"GETINFO[ ]"
                          }.get(self.data[0].methodName)
+		if string == "CALL[ ]":
+		    if self.data[0].cn > 0:
+		        string = "LOOPCALL[ ]"
 		if string == "MSIRP":
 		    string = string + '['+str(self.data[0].data)+']'
 		if string == "DELTA":
@@ -448,12 +456,17 @@ class bytecode_producer:
         # output bytecode,(to screen currently)
 	c = []
 	if func_AST.function_type == "fpgm":
-	    c.append("PUSH[ ]")
+	    c.append("PUSHB[ ]")
 	    c.append(str(func_AST.function_num))
 	    c.append("FDEF[ ]")
 	for s in self.program:
 	    c.append(str(s))
 	if func_AST.function_type == "fpgm":
+            stack_effect_with_out_POP = len(self.variable_stack) - len(func_AST.arguments)
+            if stack_effect_with_out_POP > func_AST.stack_effect:
+                # need extra POP[ ]s at the end
+                for k in range(0,stack_effect_with_out_POP - func_AST.stack_effect):
+                    c.append("POP[ ]")
 	    c.append("ENDF[ ]")
 	
 	if func_AST.function_type == 'fpgm':
@@ -474,8 +487,8 @@ class bytecode_producer:
         i = 0
         while i < len(expressions):
 	    exp = expressions[i]
-	    #if len(self.program)>0:
-	        #print self.function.function_tag,'    ',self.program[-1]
+	    if len(self.program)>0:
+		print self.program[-1]
 	    # if this is an assignment exp
             if isinstance(exp,AST.assignment_expression):
 		# if the left oprand of this assignment exp is terminal type(identifier)
@@ -625,7 +638,7 @@ class bytecode_producer:
  
 
 
-                            if exp.right_oprand.type == "identifier":
+                            elif exp.right_oprand.type == "identifier":
                                 # if the right side is an identifier, it could be copy/swap/roll instruction...
 
                                 # 1. check if this is a roll,by checking the next 3 expressions
@@ -665,42 +678,44 @@ class bytecode_producer:
 		                        continue
 
                                 # 3. check if this is a copy,(it fails 1,but pass 2,->it's a copy)
-                                if exp.right_oprand.value == self.variable_stack[-1].key.value:
-                                    s = self.statement()
-                                    s.instruction = "COPY"
-                                    self.program.append(s)
-                                    v = self.variable()
-                                    v.key = exp.left_oprand
-                                    v.value = self.variable_stack[-1].value
-                                    self.variable_stack.append(v)
-                                    i += 1
-                                    continue
+				if len(self.variable_stack) > 0:
+                                    if exp.right_oprand.value == self.variable_stack[-1].key.value:
+                                        s = self.statement()
+                                        s.instruction = "COPY"
+                                        self.program.append(s)
+                                        v = self.variable()
+                                        v.key = exp.left_oprand
+                                        v.value = self.variable_stack[-1].value
+                                        self.variable_stack.append(v)
+                                        i += 1
+                                        continue
 			    elif exp.right_oprand.type == "GS":
-				if exp.right_oprand.value == "free_vector_0":
+				if exp.right_oprand.value == "freedom_vector_0":
 				    if isinstance(expressions[i+1],AST.assignment_expression):
 				        if isinstance(expressions[i+1].right_oprand,AST.terminal_expression):
-					    if expressions[i+1].right_oprand.type == "GS" and expressions[i+1].right_oprand.value == "free_vector_1":
+					    if expressions[i+1].right_oprand.type == "GS" and expressions[i+1].right_oprand.value == "freedom_vector_1":
 					        # this is a GFV operation
 			                        s = self.statement()
 				                s.instruction = "GFV"
 				                s.data.append(exp)
 				                self.program.append(s)
-				                self.variable_stack.append(self.variable(exp.left_oprand.value,"free_vector_0"))
-				                self.variable_stack.append(self.variable(exp.right_oprand.value,"free_vector_1"))
+				                self.variable_stack.append(self.variable(exp.left_oprand,"free_vector_0"))
+				                self.variable_stack.append(self.variable(expressions[i+1].left_oprand,"free_vector_1"))
 				                i += 2
 				                continue	
                                 elif exp.right_oprand.value == "projection_vector_0":
                                     if isinstance(expressions[i+1],AST.assignment_expression):
                                         if isinstance(expressions[i+1].right_oprand,AST.terminal_expression):
                                             if expressions[i+1].right_oprand.type == "GS" and expressions[i+1].right_oprand.value == "projection_vector_1":
-                                                # this is a GFV operation
+                                                # this is a GPV operation
                                                 s = self.statement()
                                                 s.instruction = "GPV"
                                                 s.data.append(exp)
                                                 self.program.append(s)
-                                                self.variable_stack.append(self.variable(exp.left_oprand.value,"projection_vector_0"))
-                                                self.variable_stack.append(self.variable(exp.right_oprand.value,"projection_vector_1"))
+                                                self.variable_stack.append(self.variable(exp.left_oprand,"projection_vector_0"))
+                                                self.variable_stack.append(self.variable(expressions[i+1].left_oprand,"projection_vector_1"))
                                                 i += 2
+						ne = expressions[i]
                                                 continue                
 
 
@@ -758,7 +773,7 @@ class bytecode_producer:
 			    i += 1
 			    continue
 		        elif isinstance(exp.right_oprand,AST.IndexedStorage_expression):
-			    if len(self.variable_stack)>1:
+			    if len(self.variable_stack)>0:
 			        if self.variable_stack[-1].key.value == exp.left_oprand.value:
 			            # this is a Read indexed storage operation
 				    s = self.statement()
@@ -835,8 +850,7 @@ class bytecode_producer:
 		    stored_variable_stack = copy.deepcopy(self.variable_stack)
 		    exp.variable_stack_len_before_if = len(self.variable_stack)
 		    exp.variable_stack_len_before_eif = len(self.variable_stack)
-		    if_expressions = exp.if_branch		  
-		    self.process_expressions(if_expressions)
+		    self.process_expressions(exp.if_branch)   # process if branch 
 		    else_pos = len(self.program)
 		    eif_pos = -1
 		    # pop a stack variable
@@ -846,18 +860,31 @@ class bytecode_producer:
 			else_statement = self.statement()
 			else_statement.instruction = "ELSE"
 			self.program.append(else_statement)
-  			else_expressions = exp.else_branch
-			self.process_expressions(else_expressions)
+			self.process_expressions(exp.else_branch)    # process else branch
 			exp.variable_stack_len_before_eif = len(self.variable_stack)
 		        eif_pos = len(self.program)
+		    else:
+			if exp.variable_stack_len_before_else - exp.variable_stack_len_before_if < 0:
+			    else_statement = self.statement()
+			    else_statement.instruction = 'ELSE'
+			    self.program.append(else_statement)
+			    for k in range(0,exp.variable_stack_len_before_if-exp.variable_stack_len_before_else):
+				pop_statement = self.statement()
+				pop_statement.instruction = 'POP'
+			        self.program.append(pop_statement)
+			    eif_statement = self.statement()
+		 	    eif_statement.instruction = 'EIF'
+			    self.program.append(eif_statement)
+			    i += 1
+			    continue
 
 		    # configure POP instruction at the end of if and else branch
-		    if exp.variable_stack_len_before_else > exp.variable_stack_len_before_eif:
+		    if exp.variable_stack_len_before_eif > exp.variable_stack_len_before_else:
 			for k in range(0,exp.variable_stack_len_before_else - exp.variable_stack_len_before_eif):
 		            pop_stmt = self.statement()
 			    pop_stmt.instruction = "POP"
-			    self.program.append(pop_stmt)	
-		    elif exp.variable_stack_len_before_else < exp.variable_stack_len_before_eif:
+			    self.program.append(pop_stmt)
+		    elif exp.variable_stack_len_before_eif < exp.variable_stack_len_before_else:
 			if len(exp.else_branch) > 0:
 			    itr = eif_pos
 			    for k in range(0,exp.variable_stack_len_before_eif - exp.variable_stack_len_before_else):
@@ -898,9 +925,14 @@ class bytecode_producer:
 		    elif exp.methodName == "CALL":
 			# pop callee var
 			self.variable_stack.pop()
+			if exp.cn > 0:
+			    self.variable_stack.pop()
 			# configure stack effect
+			repeats = exp.cn
+			if repeats == -1:
+			    repeats = 1
 			if exp.stack_effect < 0:
-			    for k in range(0,-exp.stack_effect):
+			    for k in range(0,-exp.stack_effect*repeats):
 			        self.variable_stack.pop()
 			elif exp.stack_effect > 0:
 			    tag = self.variable_stack[-1].key.value.split('_')[0]
@@ -910,34 +942,11 @@ class bytecode_producer:
 				tag = tag + '_'
 
 
-			    for k in range(0,exp.stack_effect):
+			    for k in range(0,exp.stack_effect*repeats):
 				var_key_str = tag + str(len(self.variable_stack)+1)
 				var_val_str = '$arg_' + str(k+1)
 				var = self.variable(AST.terminal_expression("identifier",var_key_str),AST.terminal_expression("identifier",var_val_str))
 				self.variable_stack.append(var)
-
-			# need modify the variable stack w.r.t function stack effect
-		    elif exp.methodName == "LOOPCALL":
-			# pop callee and loop value vars
-		 	self.variable_stack.pop()
-			count = self.variable_stack.pop().value.value
-			# configure stack effect
-			if exp.stack_effect < 0:
-			    for k in range(0,-exp.stack_effect*count):
-				self.variable_stack.pop()
-			elif exp.stack_effect > 0:
-                            tag = self.variable_stack[-1].key.value.split('_')[0]
-                            if self.function.function_type == "fpgm":
-                                tag = tag + '_' + str(self.function.function_num) + '_'
-                            else:
-                                tag = tag + '_'
-			    
-                            for k in range(0,exp.stack_effect*count):
-                                var_key_str = tag + str(len(self.variable_stack)+1)
-                                var_val_str = '$arg_' + str(k+1)
-                                var = self.variable(AST.terminal_expression("identifier",var_key_str),AST.terminal_expression("identifier",var_val_str))
-                                self.variable_stack.append(var)
-
 
 
 		    elif exp.methodName == "AA":
@@ -980,6 +989,9 @@ class bytecode_producer:
 			self.variable_stack.pop()
 		    elif exp.methodName == "SFVFS":
 			self.variable_stack.pop()
+			self.variable_stack.pop()
+		    elif exp.methodName == "SPVFS":
+		        self.variable_stack.pop()
 			self.variable_stack.pop()
 		    elif exp.methodName == "SFVTL":
 			self.variable_stack.pop()

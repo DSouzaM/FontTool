@@ -60,9 +60,9 @@ def executeGlyphs(abstractExecutor, initialEnvironment, glyphs,ast):
     called_functions = set()
     i = 0
     for glyph in glyphs:
-	i += 1
-	if not i == 37:
-            continue
+	#i += 1
+	#if  i>110:
+        #    continue
 	abstractExecutor.glyph_num += 1
         abstractExecutor.environment = copy.deepcopy(initialEnvironment)
         abstractExecutor.execute(glyph)

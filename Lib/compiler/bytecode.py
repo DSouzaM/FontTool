@@ -157,9 +157,6 @@ class bytecode_producer:
 		    "SMD"  :"SMD[ ]",
 		    "GETINFO":"GETINFO[ ]"
                          }.get(self.data[0].methodName)
-		if string == "CALL[ ]":
-		    if self.data[0].cn > 0:
-		        string = "LOOPCALL[ ]"
 		if string == "MSIRP":
 		    string = string + '['+str(self.data[0].data)+']'
 		if string == "DELTA":
@@ -922,15 +919,16 @@ class bytecode_producer:
 			for k in range(0,exp.data):
 		            self.variable_stack.pop()
 
-		    elif exp.methodName == "CALL":
+		
+		    elif exp.methodName == "CALL" or exp.methodName == "LOOPCALL":
 			# pop callee var
 			self.variable_stack.pop()
-			if exp.cn > 0:
+			if exp.methodName == "LOOPCALL":
 			    self.variable_stack.pop()
 			# configure stack effect
-			repeats = exp.cn
-			if repeats == -1:
-			    repeats = 1
+			repeats = 1
+			if exp.methodName == "LOOPCALL":
+			    repeats = exp.repeats
 			if exp.stack_effect < 0:
 			    for k in range(0,-exp.stack_effect*repeats):
 			        self.variable_stack.pop()

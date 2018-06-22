@@ -280,7 +280,9 @@ class MethodCallStatement(object):
         self.returnVal = returnVal
     def __repr__(self):
 	if isinstance(self,CallStatement):
-            return '%sCALL%s %s%s' % (self.call_rv, self.repeats, str(self.callee), self.call_args)
+            return 'CALL '+str(self.callee)+' '+str(self.call_arg_list)
+	elif isinstance(self,LoopCallStatement):
+	    return 'LOOPCALL '+str(self.callee)+' '+str(self.repeats)+' '+str(self.call_arg_list)
         repS = ''
         if self.returnVal is not None:
             repS = str(self.returnVal) + ' := '
@@ -295,12 +297,14 @@ class MethodCallStatement(object):
 	    exp = AST.call_expression(self.callee,self.stack_effect,self.call_arg_list)
 	    if isinstance(self.callee,list):
 		exp = AST.call_expression(self.callee[0],self.stack_effect,self.call_arg_list)
-	    if len(self.repeats) > 0:
-		cn = int(self.repeats[1:len(self.repeats)])
-		exp.cn = cn
-
 	    func_tree.push_expression(exp)
 	    return
+	if isinstance(self,LoopCallStatement):
+	    exp = AST.loopcall_expression(self.callee,self.repeats,self.stack_effect,self.call_arg_list)
+	    if isinstance(self.callee,list):
+		exp = AST.loopcall_expression(self.callee,self.repeats,self.stack_effect,self.call_arg_list)
+	    func_tree.push_expression(exp)
+	    return 
 
 	if self.returnVal is not None:
             exp = AST.assignment_expression()
@@ -510,7 +514,7 @@ class ROUNDMethodCall(MethodCallStatement):
 
 class SPVFSMethodCall(MethodCallStatement):
     def __init__(self,parameters=[],returnVal=None):
-        super(SPVFSMethodCall,self).__init__(paramters,returnVal)
+        super(SPVFSMethodCall,self).__init__(parameters,returnVal)
         self.methodName = "SPVFS"
 
 class SPVTLMethodCall(MethodCallStatement):
@@ -792,25 +796,23 @@ class CallStatement(MethodCallStatement):
     def __init__(self, variable):
         super(CallStatement, self).__init__([variable])
         self.methodName = "CALL"
-        self.call_rv = None
-        self.repeats = None
         self.callee = variable
-        self.call_args = None
 	self.call_arg_list = []
-	self.is_first = False
 	self.stack_effect = 0
-	self.function_tag = None
-
+	self.returned = False
 
 class LoopCallStatement(MethodCallStatement):
     def __init__(self, variable, count):
         super(LoopCallStatement, self).__init__([variable])
-        self.count = count
         self.methodName = "LOOPCALL_"
-	self.is_first = False
+	self.repeats = 1
+	self.callee = variable
 	self.call_args_list = []
+	self.stack_effect = 1
+	self.returned = False
+
     def __repr__(self):
-        return "%s_%s" % (self.methodName, self.count)
+        return "%s_%s" % (self.methodName, self.repeats)
 
 class IndexedAssignment(AssignmentStatement):
     def __init__(self, index, var):

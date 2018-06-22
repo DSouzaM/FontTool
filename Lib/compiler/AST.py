@@ -109,7 +109,14 @@ class call_expression(methodCall_expression):
 	self.args = args
 	self.callee = callee
 	self.stack_effect = stack_effect
-	self.cn = -1
+class loopcall_expression(methodCall_expression):
+    def __init__(self,callee,repeats,stack_effect,args):
+        self.methodName = "LOOPCALL"
+	self.data = None
+	self.args = args
+	self.callee = callee
+	self.stack_effect = stack_effect
+	self.repeats = repeats
 
 class unary_expression(expression):
     def __init__(self):

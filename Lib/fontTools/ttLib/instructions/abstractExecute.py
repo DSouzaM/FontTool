@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/home/zeming/Desktop/projects/fonttools/Lib/compiler')
+sys.path.append('/home/zeming/Desktop/project/fonttools/Lib/compiler')
 from fontTools.ttLib.data import dataType
 import AST
 import logging
@@ -1334,7 +1334,7 @@ class Environment(object):
         self.current_instruction_intermediate.append(IR.SDSMethodCall([arg]))
 
     def exec_SFVFS(self):
-	self.program_stack_changefs.extend(["read","read","pop","pop"])
+	self.program_stack_changes.extend(["read","read","pop","pop"])
         args = self.program_stack_pop_many(2)
         self.current_instruction_intermediate.append(IR.SFVFSMethodCall([args]))
 
@@ -1580,13 +1580,13 @@ class Environment(object):
         self.program_stack_changes.extend(["read","read","pop","pop"])
         fn = self.program_stack_pop().eval(False)
         count = self.program_stack_pop().eval(False)
-        self.current_instruction_intermediate.append(IR.LoopCallStatement(fn, count))
+        #self.current_instruction_intermediate.append(IR.LoopCallStatement(fn, count))
 
     def exec_CALL(self):
         self.program_stack_changes.extend(["read","pop"])
         var = self.program_stack[-1]
         self.program_stack_pop()
-        self.current_instruction_intermediate.append(IR.CallStatement(var))
+        #self.current_instruction_intermediate.append(IR.CallStatement(var))
 	
 
     def execute_current_instruction(self, ins):
@@ -1821,7 +1821,11 @@ class Executor(object):
             # we could also record the effects & replay them if it did (but how many times?)
             self.execute_CALL()
         else:
-            self.execute_CALL(count)
+	    cn = self.environment.program_stack[-2].eval(False)
+	    callee = self.environment.program_stack[-1].eval(False)
+	    if not self.current_instruction.id in self.bytecode2ir.keys():
+	        self.setIRForBytecode(self.current_instruction,[IR.LoopCallStatement(callee,cn)])
+            self.execute_CALL(count,True)
 
     
 
@@ -1921,9 +1925,11 @@ class Executor(object):
             (lower,upper) = self.unfold_binary_exp(exp,scale_flag)
 	    return (int(lower),int(upper))
 
-    def execute_CALL(self,repeats=1):
+    def execute_CALL(self,repeats=1,is_loopcall=False):
         # actually we *always* want to get the concrete callee
 	callee = self.environment.program_stack[-1].eval(False)
+	if not is_loopcall and (not self.current_instruction.id in self.bytecode2ir.keys()):
+	    self.setIRForBytecode(self.current_instruction,[IR.CallStatement(callee)])
 	if isinstance(callee,dataType.AbstractValue):
             if self.uncertain_callee_backup == None:
 	      (lower_bound,upper_bound) = self.get_range(callee)
@@ -1944,13 +1950,13 @@ class Executor(object):
 		backup.backup_executor_status.current_instruction.predecessor = self.current_instruction.predecessor
 		for i in range(0,len(self.call_stack)):
 
-		     new_if_else_stack = backup.backup_executor_status.call_stack[i][-3]
+		     new_if_else_stack = backup.backup_executor_status.call_stack[i][-4]
 
 		     for j in range(0,len(new_if_else_stack)):
-		         new_if_else_stack[j].if_stmt = self.call_stack[i][-3][j].if_stmt
+		         new_if_else_stack[j].if_stmt = self.call_stack[i][-4][j].if_stmt
  
 		     oldtuple = backup.backup_executor_status.call_stack[i]
-		     newtuple = (oldtuple[0],self.call_stack[i][1],self.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtuple[8])
+		     newtuple = (oldtuple[0],self.call_stack[i][1],self.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtuple[8],oldtuple[9])
 		     backup.backup_executor_status.call_stack[i] = newtuple 
 		     backup.call_stack.append(self.call_stack[i][0])
                 backup.largest_function = backup.find_largest_func(self.bytecodeContainer)
@@ -1994,13 +2000,13 @@ class Executor(object):
                   self.call_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack)
                   for i in range(0,len(self.uncertain_callee_backup.backup_executor_status.call_stack)):
 
-                     new_if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack[i][-3])
+                     new_if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4])
 
                      for j in range(0,len(new_if_else_stack)):
-                         new_if_else_stack[j].if_stmt = self.uncertain_callee_backup.backup_executor_status.call_stack[i][-3][j].if_stmt
+                         new_if_else_stack[j].if_stmt = self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4][j].if_stmt
 
                      oldtuple = self.call_stack[i]
-                     newtuple = (oldtuple[0],self.uncertain_callee_backup.backup_executor_status.call_stack[i][1],self.uncertain_callee_backup.backup_executor_status.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtuple[8])
+                     newtuple = (oldtuple[0],self.uncertain_callee_backup.backup_executor_status.call_stack[i][1],self.uncertain_callee_backup.backup_executor_status.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtuple[8],oldtuple[9])
                      self.call_stack[i] = newtuple
 
 
@@ -2044,7 +2050,7 @@ class Executor(object):
             succ = self.current_instruction.successors[0]
         self.call_stack.append((callee, self.current_instruction, succ,
                                 self.environment.tag, copy.copy(self.environment.program_stack),
-                                self.stored_environments, self.if_else_stack, repeats,copy.deepcopy(self.environment.program_stack_changes)))
+                                self.stored_environments, self.if_else_stack, repeats,copy.deepcopy(self.environment.program_stack_changes),repeats))
 
 
 
@@ -2099,7 +2105,7 @@ class Executor(object):
         tag_returned_from = self.environment.tag
 
         (callee, previous_instruction, self.current_instruction,
-         self.environment.tag, caller_program_stack, self.stored_environments, self.if_else_stack, repeats,program_stack_changes) = self.call_stack.pop()
+         self.environment.tag, caller_program_stack, self.stored_environments, self.if_else_stack, repeats,program_stack_changes,cn) = self.call_stack.pop()
 	difference = self.environment.program_stack_changes[len(program_stack_changes):]
 	num_of_parameters = self.get_num_of_arguments(difference)
 	is_first_visit = False
@@ -2154,7 +2160,7 @@ class Executor(object):
                 succ = self.current_instruction.successors[0]
             self.call_stack.append((callee, self.current_instruction, succ,
                                 self.environment.tag, copy.copy(self.environment.program_stack),
-                                self.stored_environments,self.if_else_stack, repeats,copy.deepcopy(self.environment.program_stack_changes)))
+                                self.stored_environments,self.if_else_stack, repeats,copy.deepcopy(self.environment.program_stack_changes),cn))
             self.if_else_stack = []
             logger.info("in %s, calling function %d" % (self.environment.tag, callee))
             assert callee in self.bytecodeContainer.function_table, "Callee function #%s not defined" % callee
@@ -2186,7 +2192,7 @@ class Executor(object):
 
         if repeats > 1:
             call_rv += 'LOOP'
-            repeats_str = '_%s' % str(repeats)
+            repeats_str = '_%s' % str(cn)
         else:
             repeats_str = ''
 	if callee not in self.first_time_call_args.keys():
@@ -2202,14 +2208,16 @@ class Executor(object):
 	        callee.append(fn)
 		#call_arg_list.append(self.function_arg_list[fn])
 
-	temp = IR.CallStatement(callee)
-	temp.callee = callee
-	temp.call_rv = call_rv
-	temp.repeats = repeats_str
-	temp.call_args = call_args
-	temp.call_arg_list = call_arg_list
-	temp.stack_effect = len(self.environment.program_stack) - len(caller_program_stack)
-	self.setIRForBytecode(previous_instruction,[temp])
+	
+	temp = self.bytecode2ir[previous_instruction.id][0]
+	if not temp.returned:
+	    temp.callee = callee
+	    temp.call_arg_list = call_arg_list
+	    temp.stack_effect = len(self.environment.program_stack) - len(caller_program_stack)
+	    if isinstance(temp,IR.LoopCallStatement):
+	        temp.repeats = cn
+	    temp.returned = True
+	    
 	
         logger.info("pop call stack, next is %s", str(self.current_instruction))
         logger.info("stack used %d/stack additional %d" % (stack_used, stack_additional))
@@ -2299,13 +2307,13 @@ class Executor(object):
                         self.call_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack)
                         for i in range(0,len(self.uncertain_callee_backup.backup_executor_status.call_stack)):
 
-                           new_if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack[i][-3])
+                           new_if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4])
 
                            for j in range(0,len(new_if_else_stack)):
-                               new_if_else_stack[j].if_stmt = self.uncertain_callee_backup.backup_executor_status.call_stack[i][-3][j].if_stmt
+                               new_if_else_stack[j].if_stmt = self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4][j].if_stmt
 
                            oldtuple = self.call_stack[i]
-                           newtuple = (oldtuple[0],self.uncertain_callee_backup.backup_executor_status.call_stack[i][1],self.uncertain_callee_backup.backup_executor_status.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtuple[8])
+                           newtuple = (oldtuple[0],self.uncertain_callee_backup.backup_executor_status.call_stack[i][1],self.uncertain_callee_backup.backup_executor_status.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtuple[8],oldtuple[9])
                            self.call_stack[i] = newtuple
 
 
@@ -2330,13 +2338,13 @@ class Executor(object):
                   self.call_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack)
                   for i in range(0,len(self.uncertain_callee_backup.backup_executor_status.call_stack)):
 
-                     new_if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack[i][-3])
+                     new_if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4])
 
                      for j in range(0,len(new_if_else_stack)):
-                         new_if_else_stack[j].if_stmt = self.uncertain_callee_backup.backup_executor_status.call_stack[i][-3][j].if_stmt
+                         new_if_else_stack[j].if_stmt = self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4][j].if_stmt
 
                      oldtuple = self.call_stack[i]
-                     newtuple = (oldtuple[0],self.uncertain_callee_backup.backup_executor_status.call_stack[i][1],self.uncertain_callee_backup.backup_executor_status.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtuple[8])
+                     newtuple = (oldtuple[0],self.uncertain_callee_backup.backup_executor_status.call_stack[i][1],self.uncertain_callee_backup.backup_executor_status.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtuple[8],oldtuple[9])
                      self.call_stack[i] = newtuple
 
 
@@ -2370,13 +2378,13 @@ class Executor(object):
                         
                         for i in range(0,len(self.uncertain_callee_backup.backup_executor_status.call_stack)):
 
-                             new_if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack[i][-3])
+                             new_if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4])
 
                              for j in range(0,len(new_if_else_stack)):
-                                 new_if_else_stack[j].if_stmt = self.uncertain_callee_backup.backup_executor_status.call_stack[i][-3][j].if_stmt
+                                 new_if_else_stack[j].if_stmt = self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4][j].if_stmt
 
                              oldtuple = self.call_stack[i]
-                             newtuple = (oldtuple[0],self.uncertain_callee_backup.backup_executor_status.call_stack[i][1],self.uncertain_callee_backup.backup_executor_status.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtyple[8])
+                             newtuple = (oldtuple[0],self.uncertain_callee_backup.backup_executor_status.call_stack[i][1],self.uncertain_callee_backup.backup_executor_status.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtuple[8],oldtuple[9])
                              self.call_stack[i] = newtuple
  
 			self.visited_functions = self.uncertain_callee_backup.backup_executor_status.visited_functions
@@ -2661,13 +2669,13 @@ class Executor(object):
     
                                     for i in range(0,len(self.uncertain_callee_backup.backup_executor_status.call_stack)):
 
-                                       new_if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack[i][-3])
+                                       new_if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4])
 
                                        for j in range(0,len(new_if_else_stack)):
-                                           new_if_else_stack[j].if_stmt = self.uncertain_callee_backup.backup_executor_status.call_stack[i][-3][j].if_stmt
+                                           new_if_else_stack[j].if_stmt = self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4][j].if_stmt
 
                                        oldtuple = self.call_stack[i]
-                                       newtuple = (oldtuple[0],self.uncertain_callee_backup.backup_executor_status.call_stack[i][1],self.uncertain_callee_backup.backup_executor_status.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtuple[8])
+                                       newtuple = (oldtuple[0],self.uncertain_callee_backup.backup_executor_status.call_stack[i][1],self.uncertain_callee_backup.backup_executor_status.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtuple[8],oldtuple[9])
                                        self.call_stack[i] = newtuple
 
 				    self.visited_functions = self.uncertain_callee_backup.backup_executor_status.visited_functions
@@ -2869,13 +2877,13 @@ class Executor(object):
                         self.call_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack)
                         for i in range(0,len(self.uncertain_callee_backup.backup_executor_status.call_stack)):
 
-                           new_if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack[i][-3])
+                           new_if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4])
 
                            for j in range(0,len(new_if_else_stack)):
-                               new_if_else_stack[j].if_stmt = self.uncertain_callee_backup.backup_executor_status.call_stack[i][-3][j].if_stmt
+                               new_if_else_stack[j].if_stmt = self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4][j].if_stmt
 
                            oldtuple = self.call_stack[i]
-                           newtuple = (oldtuple[0],self.uncertain_callee_backup.backup_executor_status.call_stack[i][1],self.uncertain_callee_backup.backup_executor_status.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtuple[8])
+                           newtuple = (oldtuple[0],self.uncertain_callee_backup.backup_executor_status.call_stack[i][1],self.uncertain_callee_backup.backup_executor_status.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtuple[8],oldtuple[9])
                            self.call_stack[i] = newtuple
 
 

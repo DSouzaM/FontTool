@@ -78,9 +78,12 @@ int main(int argC,char* argV[]){
         error = FT_Render_Glyph(glyf2,FT_RENDER_MODE_NORMAL);
 	//printf("error%d\n",error);
 	for(int k=0;k<glyf1->bitmap.rows*glyf1->bitmap.width;k++){
-	    //printf("%d,%d\n",glyf1->bitmap.buffer[k],glyf2->bitmap.buffer[k]);
 	    if(glyf1->bitmap.buffer[k] != glyf2->bitmap.buffer[k]){
 		num_of_not_same += 1;
+		//printf("%ld,%d not working.\n",character,index);
+		//for(int l=0;l<glyf1->bitmap.rows*glyf1->bitmap.width;l++)
+		//    printf("%d,%d\n",glyf1->bitmap.buffer[l],glyf2->bitmap.buffer[l]);
+	
 		break;
 	    }
 	}

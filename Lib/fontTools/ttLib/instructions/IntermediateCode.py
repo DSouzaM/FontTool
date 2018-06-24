@@ -325,6 +325,8 @@ class MethodCallStatement(object):
 	else:
 	    if isinstance(self,MSIRPMethodCall):
 		exp = AST.methodCall_expression("MSIRP",self.data.value,self.parameters)
+	    elif isinstance(self,FLIPRGMethodCall):
+  	        exp = AST.methodCall_expression(self.methodName,self.arg,self.parameters)
 	    elif isinstance(self,AAMethodCall):
 	        exp = AST.methodCall_expression("AA",None,self.parameters)
 	    elif isinstance(self,ALIGNRPMethodCall):
@@ -453,6 +455,15 @@ class FLOORMethodCall(MethodCallStatement):
             return self
         return math.floor(p)
 
+class FLIPRGMethodCall(MethodCallStatement):
+    def __init__(self,arg, parameters = [],returnVal=None):
+        super(FLIPRGMethodCall,self).__init__(parameters,returnVal)
+        self.methodName = "FLIPRGON"
+	self.arg = arg
+	if arg == "off":
+            self.methodName = "FLIPRGOFF"
+
+    
 class NOTMethodCall(MethodCallStatement):
     def __init__(self, parameters = [], returnVal=None):
         super(NOTMethodCall, self).__init__(parameters, returnVal)
@@ -672,6 +683,7 @@ class AssignmentStatement(dataType.AbstractValue):
 	# configure left oprand
 	if isinstance(self.left,GraphicsStateVariable):
 	    exp.left_oprand = AST.terminal_expression("GS",self.left.identifier[3:len(self.left.identifier)-1])
+ 
 	elif isinstance(self.left,str):
 	    if self.left.startswith("GS"):
 		if self.left.endswith(".all"):

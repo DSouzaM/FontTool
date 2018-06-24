@@ -1,4 +1,3 @@
-import os
 import sys
 import AST
 import token
@@ -133,6 +132,8 @@ class bytecode_producer:
 		    "IP" : "IP[ ]",
 		    "IUP": "IUP",
 		    "ISECT":"ISECT[ ]",
+		    "FLIPRGON":"FLIPRGON[ ]",
+		    "FLIPRGOFF":"FLIPRGOFF[ ]",
 		    "MD" : "MD",
 		    "MDAP":"MDAP",
 		    "MDRP":"MDRP",
@@ -484,8 +485,6 @@ class bytecode_producer:
         i = 0
         while i < len(expressions):
 	    exp = expressions[i]
-	    if len(self.program)>0:
-		print self.program[-1]
 	    # if this is an assignment exp
             if isinstance(exp,AST.assignment_expression):
 		# if the left oprand of this assignment exp is terminal type(identifier)
@@ -547,6 +546,13 @@ class bytecode_producer:
 			    self.variable_stack.pop()
 			    i += 1
 			    continue
+			if exp.left_oprand.value == "auto_flip":
+			    s = self.statement()
+			    s.instruction = "AUTOFLIP"
+			    s.data.append(exp.right_oprand)
+			    self.program.append(s)
+			    i+=1
+			    continue
 		        if i+1 < len(expressions):
 			 if isinstance(expressions[i+1],AST.assignment_expression): 
 		          if isinstance(expressions[i+1].left_oprand,AST.terminal_expression):
@@ -560,6 +566,7 @@ class bytecode_producer:
 				    self.program.append(s)
 				    i += 2
 				    continue
+			    '''
 			    if exp.left_oprand.value == "auto_flip":
 				s = self.statement()
 			  	s.instruction = "AUTOFLIP"
@@ -567,7 +574,7 @@ class bytecode_producer:
 				self.program.append(s)
 				i += 1
 		 		continue	
-	
+			    '''
 			# if this fails the test above
 		        if exp.left_oprand.value == "freedom_vector":
 			    if isinstance(exp.right_oprand,AST.terminal_expression):
@@ -840,6 +847,116 @@ class bytecode_producer:
 	    # this is not an assignment exp
             else:
 		if isinstance(exp,AST.if_expression):
+		    # declare variable stack backup variables
+		    var_stack_after_if_branch = None
+		    var_stack_after_else_branch = None
+		    var_stack_backup = None
+
+		    # push if instruction, pop a variable from variable_stack
+		    if_stmt = self.statement()
+		    if_stmt.instruction = "IF"
+		    self.program.append(if_stmt)
+		    self.variable_stack.pop()
+		
+		    # deepcopy current variable stack to var_stack_backup
+		    var_stack_backup = copy.deepcopy(self.variable_stack)
+		    
+	 	    # process if branch
+		    self.process_expressions(exp.if_branch)
+
+		    # deepcopy current variable stack to var_stack_after_if_branch
+		    var_stack_after_if_branch = copy.deepcopy(self.variable_stack)
+		
+		    # if else branch is not empty
+		    if len(exp.else_branch) > 0:
+			# push else statement 
+			else_stmt = self.statement()
+			else_stmt.instruction = "ELSE"
+			self.program.append(else_stmt)
+			# get the position(index) of else statement
+			else_stmt_index = len(self.program)-1
+			# restore the variable stack and process the else branch
+			self.variable_stack = copy.deepcopy(var_stack_backup)
+		        self.process_expressions(exp.else_branch)
+			# deepcopy current variable stack to var_stack_after_else_branch
+			var_stack_after_else_branch = copy.deepcopy(self.variable_stack)
+			
+			## configure pop instructions at the end of if/else branches
+			#  if else branch has more variables, need pops at the end of else branch
+			if len(var_stack_after_else_branch) > len(var_stack_after_if_branch):
+			    num_to_pop = len(var_stack_after_else_branch) - len(var_stack_after_if_branch)
+			    for k in range(0,num_to_pop):
+				# append pop statment at the end of program and pop a variable from else_branch
+				pop_stmt = self.statement()
+				pop_stmt.instruction = "POP"
+				self.program.append(pop_stmt)
+				var_stack_after_else_branch.pop()
+			
+				
+
+			#  if if branch has more variables, need pops at the end of if branch
+			elif len(var_stack_after_if_branch) > len(var_stack_after_else_branch):
+			    num_to_pop = len(var_stack_after_if_branch) - len(var_stack_after_else_branch)
+			    pos = else_stmt_index
+			    for k in range(0,num_to_pop):
+			        # insert pop statement to the index of else statement
+				pop_stmt = self.statement()
+				pop_stmt.instruction = "POP"
+				self.program.insert(pos,pop_stmt)
+				pos += 1
+			  	# pop a variable from if branch
+				var_stack_after_if_branch.pop()
+
+			# append eif statement
+			eif_stmt = self.statement()
+			eif_stmt.instruction = "EIF"
+			self.program.append(eif_stmt)
+			# set current variable stack to var_stack_after_else_branch (or var_stack_after_if_branch)		
+			self.variable_stack = var_stack_after_else_branch
+
+		    # if else branch is empty, var stack after "else branch" is backup var stack
+		    else:
+			# if the if branch reduced the variable stack size, need else branch with pops
+			if len(var_stack_backup) > len(var_stack_after_if_branch):
+			    num_to_pop = len(var_stack_backup) - len(var_stack_after_if_branch)
+			    # append else statement
+			    else_stmt = self.statement()
+			    else_stmt.instruction = "ELSE"
+			    self.program.append(else_stmt)
+			    for k in range(0,num_to_pop):
+				# append pop statement, and pop a variable from var_stack_backup
+				pop_stmt = self.statement()
+				pop_stmt.instruction = "POP"
+				self.program.append(pop_stmt)
+				var_stack_backup.pop()
+
+			# if the if branch increased the variable stakc size, need pops at the end of the if branch
+			elif len(var_stack_after_if_branch) > len(var_stack_backup):
+			    num_to_pop = len(var_stack_after_if_branch) - len(var_stack_backup)
+			    for k in range(0,num_to_pop):
+				# append pop to the end and pop a variable from var_stack_after_if_branch
+				pop_stmt = self.statement()
+				pop_stmt.instruction = "POP"	
+				self.program.append(pop_stmt)
+				var_stack_after_if_branch.pop()
+		
+		        # append eif statement
+                        eif_stmt = self.statement()
+                        eif_stmt.instruction = "EIF"
+                        self.program.append(eif_stmt)
+		        # set the current variable stack to var_stack_backup (or var_stack_after_if_branch)
+		        self.variable_stack = var_stack_backup
+
+		    # increment program pointer and continue
+		    i += 1
+		    continue
+
+
+
+
+		    '''
+		    var_stack_after_if_branch = None
+		    var_stack_after_else_branch = None
 		    if_statement = self.statement()
 		    if_statement.instruction = "IF"
 		    self.program.append(if_statement)
@@ -850,6 +967,7 @@ class bytecode_producer:
 		    self.process_expressions(exp.if_branch)   # process if branch 
 		    else_pos = len(self.program)
 		    eif_pos = -1
+		    var_stack_after_if_branch = copy.deepcopy(self.variable_stack)
 		    # pop a stack variable
 		    exp.variable_stack_len_before_else = len(self.variable_stack)
 		    if len(exp.else_branch) > 0:
@@ -860,12 +978,15 @@ class bytecode_producer:
 			self.process_expressions(exp.else_branch)    # process else branch
 			exp.variable_stack_len_before_eif = len(self.variable_stack)
 		        eif_pos = len(self.program)
+			var_stack_after_else_branch = copy.deepcopy(self.variable_stack)
 		    else:
+			var_stack_after_else_branch = copy.deepcopy(stored_variable_stack)
 			if exp.variable_stack_len_before_else - exp.variable_stack_len_before_if < 0:
 			    else_statement = self.statement()
 			    else_statement.instruction = 'ELSE'
 			    self.program.append(else_statement)
 			    for k in range(0,exp.variable_stack_len_before_if-exp.variable_stack_len_before_else):
+				var_stack_after_else_branch.pop()
 				pop_statement = self.statement()
 				pop_statement.instruction = 'POP'
 			        self.program.append(pop_statement)
@@ -877,17 +998,21 @@ class bytecode_producer:
 
 		    # configure POP instruction at the end of if and else branch
 		    if exp.variable_stack_len_before_eif > exp.variable_stack_len_before_else:
-			for k in range(0,exp.variable_stack_len_before_else - exp.variable_stack_len_before_eif):
+			for k in range(0,exp.variable_stack_len_before_eif - exp.variable_stack_len_before_else):
 		            pop_stmt = self.statement()
 			    pop_stmt.instruction = "POP"
 			    self.program.append(pop_stmt)
+			    var_stack_after_else_branch.pop()
+			    
 		    elif exp.variable_stack_len_before_eif < exp.variable_stack_len_before_else:
 			if len(exp.else_branch) > 0:
-			    itr = eif_pos
-			    for k in range(0,exp.variable_stack_len_before_eif - exp.variable_stack_len_before_else):
+			    itr = else_pos
+			    for k in range(0,exp.variable_stack_len_before_else - exp.variable_stack_len_before_eif):
 			        pop_stmt = self.statement()
 			        pop_stmt.instructon = "POP"
 				self.program.insert(itr,pop_stmt)
+				print 'enter this'
+				var_stack_after_if_branch.pop()
 				itr += 1
 			else:
 			    else_stmt = self.statement()
@@ -900,12 +1025,13 @@ class bytecode_producer:
 				self.program.insert(itr,pop_stmt)
 				itr += 1
 
-
 		    eif_statement = self.statement()
 		    eif_statement.instruction = "EIF"
 		    self.program.append(eif_statement)
+		    self.variable_stack = var_stack_after_if_branch
 		    i += 1
 		    continue
+		    '''
 	        elif isinstance(exp,AST.methodCall_expression):
 		    s = self.statement()
 		    s.instruction = "methodCall"
@@ -954,6 +1080,7 @@ class bytecode_producer:
 			self.variable_stack.pop()
 		    elif exp.methodName == "DELTA":
 			self.variable_stack.pop()
+			print 'i:',i,len(expressions)
 			for k in range(0,len(exp.args)):
 			    self.variable_stack.pop()
 		    elif exp.methodName == "IP":
@@ -1012,7 +1139,9 @@ class bytecode_producer:
                         self.variable_stack.pop()
                     elif exp.methodName == "SMD":
                         self.variable_stack.pop()
-
+		    elif exp.methodName == "FLIPRGON" or exp.methodName == "FLIPRGOFF":
+			self.variable_stack.pop()
+			self.variable_stack.pop()
 		    elif exp.methodName == "ISECT":
 			for k in range(0,5):
 			   self.variable_stack.pop()

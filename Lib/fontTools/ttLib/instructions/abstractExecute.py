@@ -468,13 +468,13 @@ class Environment(object):
 
     def exec_FLIPRGOFF(self):
 	self.program_stack_changes.extend(["read","read","pop","pop"])
-        self.program_stack_pop_many(2)
-        #raise NotImplementedError
+        args = self.program_stack_pop_many(2)
+	self.current_instruction_intermediate.append(IR.FLIPRGMethodCall("off",args))
 
     def exec_FLIPRGON(self):
 	self.program_stack_changes.extend(["read","read","pop","pop"])
-        self.program_stack_pop_many(2)
-        #raise NotImplementedError
+        args = self.program_stack_pop_many(2)
+	self.current_instruction_intermediate.append(IR.FLIPRGMethodCall("on",args))
 
     def exec_FLOOR(self):
         self.unary_operation('floor')

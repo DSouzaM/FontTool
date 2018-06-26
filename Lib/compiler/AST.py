@@ -95,10 +95,11 @@ class binary_expression(expression):
 
 
 class methodCall_expression(expression):
-    def __init__(self,method=None,data=None,args=None):
+    def __init__(self,method=None,data=None,args=None,pops=0):
         self.methodName = method
 	self.data = data
 	self.args = args
+	self.pops = pops
     def __str__(self):
 	return "method call expression: method="+str(self.methodName)
 
@@ -148,6 +149,7 @@ class assignment_expression(expression):
         expression.__init__(self)
         self.left_oprand = None
         self.right_oprand = None
+	self.pops = 0
     def __str__(self):
         return "assignment expression: left_oprand="+str(self.left_oprand)+" right_oprand="+str(self.right_oprand)
 

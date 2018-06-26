@@ -21,7 +21,6 @@ def generate_ttx(ori_ttx_file,out_ttx_file,font_bytecode):
                         for line in font_bytecode.fpgm[fn]:
                             string = string + '      ' + line + '\n'
                     child_l2.text = string
-
         if child_l1.tag == 'prep':
             for child_l2 in child_l1:
                 if child_l2.tag == 'assembly':
@@ -44,7 +43,6 @@ def generate_ttx(ori_ttx_file,out_ttx_file,font_bytecode):
 			            for line in font_bytecode.glyf[glyf_name]:
 				        string = string + '      ' + line + '\n'
 			            child_l4.text = string
-
     tree.write(out_ttx_file,encoding='utf-8',xml_declaration=True)
 
 
@@ -150,11 +148,13 @@ class compiler:
 	bp = bytecode.bytecode_producer()
 
         for f in ast.program_functions:
+	    print 'fpgm:',f.function_num
 	    f.arguments = ast.fpgm2args[f.function_num]
 	    f.stack_effect = ast.fpgm2stack_effect[f.function_num]
 	    bp.generate_code(f)
-
+	    
         if not ast.prep_function is None:
+	    print 'prep'
 	    bp.generate_code(ast.prep_function) 
 
 	for f in ast.glyph_functions:

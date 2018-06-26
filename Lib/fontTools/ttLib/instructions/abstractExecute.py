@@ -57,6 +57,8 @@ class Environment(object):
 
         self.program_stack_changes = []
 
+	self.pop_counter = 0
+
     def __repr__(self):
         stackVars = []
         STACK_LIMIT = 6
@@ -184,6 +186,7 @@ class Environment(object):
         return tempVariable
 
     def program_stack_pop(self):
+	self.pop_counter += 1
         val = self.program_stack.pop()
         if self.stack_depth() < self.minimum_stack_depth:
             self.minimum_stack_depth = self.stack_depth()
@@ -573,6 +576,14 @@ class Environment(object):
         else:
             return self.bytecodeContainer.tag_to_programs[self.tag].body
 
+    def evaluate_operations(self,arg):
+        if isinstance(arg,IR.UnaryExpression):
+            if arg.operator == 'NEG':
+		return (True,-arg.arg)
+	return (False,None)
+
+
+
     def adjust_succ_for_relative_jump(self, current_instruction, arg, mnemonic,if_else_stack,ignored_insts,function_instructions_list,bytecode2ir,executor):
         only_succ = mnemonic == 'JMPR'
 	#print 'enter adjust succ'
@@ -583,6 +594,11 @@ class Environment(object):
 	flow_control_insts_cross_list = []
         skip_list = []
         jump_to_return = False
+	if isinstance(arg,dataType.AbstractValue):
+	    (explicit,arg) = self.evaluate_operations(arg)
+	    if not explicit:
+		sys.exit()
+
         assert not isinstance(arg, dataType.AbstractValue)
 	#print 'jump offset=',arg
         ins = self.fetch_body_for_tag(self.tag).instructions
@@ -1138,11 +1154,10 @@ class Environment(object):
 
     def exec_MINDEX(self):
 	self.program_stack_changes.extend(["read","pop"])
-
         index = self.program_stack_pop().eval(False)
-	for i in range(0,index):
+	for i in range(0,index-1):
 	    self.program_stack_changes.append("read")
-	self.program_stack_changes.append("push")
+	#self.program_stack_changes.append("push")
         assert not isinstance(index, dataType.AbstractValue)
         top = self.program_stack[-index].eval(self.keep_abstract)
         del self.program_stack[-index]
@@ -1196,10 +1211,12 @@ class Environment(object):
         self.binary_operation('MUL')
 
     def exec_NEG(self):
+	self.unary_operation('NEG')
+	'''
         arg = self.program_stack_pop()
         narg = IR.UnaryExpression(arg, IR.NEGOperator()).eval(self.keep_abstract)
         self.program_stack_push(narg)
-
+	'''
     def exec_NEQ(self):
         self.binary_operation('NEQ')
 
@@ -1374,12 +1391,15 @@ class Environment(object):
 
 
     def exec_SHPIX(self):
+	pops = self.pop_counter
         self.program_stack_pop()
         loopValue = self.graphics_state['loop']
         self.graphics_state['loop'] = 1
         assert len(self.program_stack) >= loopValue, "IP: stack underflow"
         pts = self.program_stack_pop_many(loopValue)
-        self.current_instruction_intermediate.append(IR.SHPIXMethodCall(pts))
+	ir = IR.SHPIXMethodCall(pts)
+	ir.pops = pops
+        self.current_instruction_intermediate.append(ir)
 	for i in range(0,loopValue):
 	    self.program_stack_changes.append("read")
 	for i in range(0,loopValue):
@@ -1547,16 +1567,27 @@ class Environment(object):
         return self.program_stack_pop()
 
     def exec_SRP0(self):
+	pops = self.pop_counter
         arg = self.exec_SRP(0)
-        self.current_instruction_intermediate.append(IR.CopyStatement(IR.RP0(), arg))    
+        ir = IR.CopyStatement(IR.RP0(),arg)
+        ir.pops = pops
+        self.current_instruction_intermediate.append(ir)
+
 
     def exec_SRP1(self):
+	pops = self.pop_counter
         arg = self.exec_SRP(1)
-        self.current_instruction_intermediate.append(IR.CopyStatement(IR.RP1(), arg))    
+        ir = IR.CopyStatement(IR.RP1(),arg)
+        ir.pops = pops
+        self.current_instruction_intermediate.append(ir)
+
 
     def exec_SRP2(self):
+	pops = self.pop_counter
         arg = self.exec_SRP(2)
-        self.current_instruction_intermediate.append(IR.CopyStatement(IR.RP2(), arg))    
+	ir = IR.CopyStatement(IR.RP2(),arg)
+	ir.pops = pops
+        self.current_instruction_intermediate.append(ir)    
 
     def exec_SANGW(self):
         self.program_stack_changes.extend(["read","pop"])
@@ -1594,6 +1625,8 @@ class Environment(object):
         self.current_instruction = ins
         getattr(self,"exec_"+self.current_instruction.mnemonic)()
 	self.program_stack_changes.append("dot")
+	if not self.current_instruction.mnemonic == "POP":
+	    self.pop_counter = 0
         return self.current_instruction_intermediate
 
 def erase_lines(n):

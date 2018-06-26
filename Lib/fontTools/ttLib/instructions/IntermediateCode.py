@@ -274,6 +274,7 @@ class MethodCallStatement(object):
     def __init__(self, parameters = [], returnVal=None):
     	self.parameters = parameters
         self.returnVal = returnVal
+	self.pops = 0
     def setParameters(self, parameters):
         self.parameters = parameters
     def setReturnVal(self, returnVal):
@@ -376,7 +377,7 @@ class MethodCallStatement(object):
 	    elif isinstance(self,SHPMethodCall):
 		exp = AST.methodCall_expression("SHP",self.data.value,self.parameters)
 	    elif isinstance(self,SHPIXMethodCall):
-		exp = AST.methodCall_expression("SHPIX",None,self.parameters)
+		exp = AST.methodCall_expression("SHPIX",None,self.parameters,pops=self.pops)
             elif isinstance(self,SHZMethodCall):
                 exp = AST.methodCall_expression("SHZ",self.data.value,self.parameters)
             elif isinstance(self,SLOOPMethodCall):
@@ -675,11 +676,13 @@ class SZP2MethodCall(MethodCallStatement):
 class AssignmentStatement(dataType.AbstractValue):
     def __init__(self):
         self.operator = AssignOperator()
+	self.pops = 0
     def __repr__(self):
         return "%s %s %s" % (self.left, self.operator, str(self.right))
 
     def push_expression(self,func_tree):
 	exp = AST.assignment_expression()
+	exp.pops = self.pops
 	# configure left oprand
 	if isinstance(self.left,GraphicsStateVariable):
 	    exp.left_oprand = AST.terminal_expression("GS",self.left.identifier[3:len(self.left.identifier)-1])
@@ -733,14 +736,14 @@ class AssignmentStatement(dataType.AbstractValue):
  
         elif isinstance(self.right,dataType.RoundState_DTG):
             exp.right_oprand = AST.roundState_expression("RoundState_DTG")
-
         elif isinstance(self.right,dataType.RoundState_DG):
             exp.right_oprand = AST.roundState_expression("RoundState_DG")
-
 	elif isinstance(self.right,dataType.RoundState_G):	
 	    exp.right_oprand = AST.roundState_expression("RoundState_G")
         elif isinstance(self.right,dataType.RoundState_HG):
             exp.right_oprand = AST.roundState_expression("RoundState_HG")
+	elif isinstance(self.right,dataType.RoundState_UG):
+	    exp.right_oprand = AST.roundState_expression("RoundState_UG")
 
         elif isinstance(self.right,dataType.RoundState_Super):
             exp.right_oprand = AST.roundState_expression("RoundState_Super")

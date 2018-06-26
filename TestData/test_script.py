@@ -1,4 +1,5 @@
 import os
+import os.path
 import sys
 import time
 import psutil
@@ -132,26 +133,51 @@ def erase_lines(n):
 	sys.stdout.write(ERASE)
 
 num_of_success = 0
+# for each font
 for i in range (0,len(fonts)):
+    # figure out file directories
     current_font_name = fonts_without_dir[i]
-    output_name = output_directory+"/"+current_font_name[:-4]+".coi"
-    args = ['-fipGz',fonts[i],output_name]
+    output_coi_dir = output_directory+"/"+current_font_name[:-4]+".coi"
+    output_ttx_dir = output_directory+"/"+current_font_name[:-4]+"_modified.ttx"
+    output_ttf_dir = output_directory+"/"+current_font_name[:-4]+"_modified.ttf"
+    ori_ttx_dir = output_directory+"/"+current_font_name[:-4]+".ttx"
+    ori_ttf_dir = output_directory+"/"+current_font_name[:-4]+".ttf"    
+    
+    # remove output files if existed
+    if os.path.isfile(output_coi_dir):
+        os.system("rm "+output_coi_dir)
+    if os.path.isfile(output_ttx_dir):
+        os.system("rm "+output_ttx_dir)
+    if os.path.isfile(output_ttf_dir):
+        os.system("rm "+output_ttf_dir)
+
+    # symbolic execute input ttx file 
+    args = ['-fipGz',fonts[i],output_coi_dir]
     print '**************** symbolic executing ',fonts[i]
     FT.test(args)
+    print '**************** creating .ttf file...'
 
-    print '**************** creating .ttf file ...'
     cmd = "ttx -q "+output_directory+'/'+current_font_name[:-4]+"_modified.ttx"
     os.system(cmd)
     erase_lines(1)
     print '**************** .ttf file created.'
-    print '**************** running bitmap matching test ...'
-    
-    bitmap_input = output_directory+'/'+current_font_name[:-4]+".ttf"
-    bitmap_output = output_directory+'/'+current_font_name[:-4]+"_modified.ttf"
-    cmd = output_directory+'/'+'a.out '+bitmap_input+' '+bitmap_output
+
+    # make a copy of .ttx and .ttf file of original font file in output directory
+    cmd_create_ori_ttx = "cp "+input_directory+'/'+current_font_name[:-4]+".ttx"+' '+output_directory+'/'+current_font_name[:-4]+".ttx"
+    cmd_create_ori_ttf = "ttx -q "+output_directory+'/'+current_font_name[:-4]+".ttx"
+    if not os.path.isfile(output_directory+'/'+current_font_name[:-4]+".ttx"):
+        os.system(cmd_create_ori_ttx)
+    if not os.path.isfile(output_directory+'/'+current_font_name[:-4]+".ttf"):
+        os.system(cmd_create_ori_ttf)
+
+
+
+    # running bitmap matching test with FreeType2 #
+    print '**************** running bitmap matching test...'    
+    cmd = output_directory+'/'+'freetype2_test '+ori_ttf_dir+' '+output_ttf_dir
     os.system(cmd)
-
-
+    print current_font_name + ' done!'
+    print '-----------------------------------------------------------------'
     num_of_success += 1
      
 

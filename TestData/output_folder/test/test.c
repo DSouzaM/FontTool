@@ -5,8 +5,8 @@
 
 int main(int argC,char* argV[]){
     
-    char* ori_filename = "arial.ttf";
-    char* mod_filename = "arial_modified.ttf";
+    char* ori_filename = "NotoMono-Regular.ttf";
+    char* mod_filename = "NotoMono-Regular_modified.ttf";
     if(argC==3)
     {
         ori_filename = argV[1];    
@@ -81,8 +81,8 @@ int main(int argC,char* argV[]){
 	    if(glyf1->bitmap.buffer[k] != glyf2->bitmap.buffer[k]){
 		num_of_not_same += 1;
 		//printf("%ld,%d not working.\n",character,index);
-		//for(int l=0;l<glyf1->bitmap.rows*glyf1->bitmap.width;l++)
-		//    printf("%d,%d\n",glyf1->bitmap.buffer[l],glyf2->bitmap.buffer[l]);
+		for(int l=0;l<glyf1->bitmap.rows*glyf1->bitmap.width;l++)
+		    printf("%d,%d\n",glyf1->bitmap.buffer[l],glyf2->bitmap.buffer[l]);
 	
 		break;
 	    }

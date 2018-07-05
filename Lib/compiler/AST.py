@@ -57,6 +57,8 @@ class function:
                     top_branch.if_branch.append(exp)
                 else:
                     top_branch.else_branch.append(exp)
+	    elif isinstance(top_branch,loop_expression):
+  	        top_branch.loop_branch.append(exp)
             
 
 
@@ -143,6 +145,15 @@ class if_expression(expression):
 
     def __str__(self):
         return "if expression:"
+
+class loop_expression(expression):
+    def __init__(self):
+        self.condition_expression = None
+        self.loop_branch = []
+        self.parent = None
+	self.loop_size = 0
+    def __str__(self):
+        return "loop expression"
 
 class assignment_expression(expression):
     def __init__(self):

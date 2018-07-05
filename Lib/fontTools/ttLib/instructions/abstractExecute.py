@@ -52,11 +52,9 @@ class Environment(object):
         self.current_instruction_intermediate = []
         self.keep_abstract = True
         self.already_seen_jmpr_targets = {}
-  
-	self.current_func_tree = None
 
         self.program_stack_changes = []
-
+  
 	self.pop_counter = 0
 
     def __repr__(self):
@@ -220,12 +218,6 @@ class Environment(object):
         res = e.eval(self.keep_abstract)
         self.program_stack_push(res, False)
         self.current_instruction_intermediate.append(IR.OperationAssignmentStatement(v, e))
-        if not self.current_func_tree is None:
-            new_exp = AST.unary_expression()
-            new_exp.op = action
-            new_exp.oprand1 = AST.terminal_expression("identifier",arg)
-            new_exp.result = AST.terminal_expression("identifier",v_name)
-            self.current_func_tree.push_expression(new_exp)
 
         return res
 
@@ -376,11 +368,6 @@ class Environment(object):
 	argN_name = identifierGenerator.generateIdentifier(self.tag, self.stack_depth() - (index ))
 	self.current_instruction_intermediate.append(IR.CopyStatement(IR.Variable(var_name),
                                                                       IR.Variable(argN_name)))
-        if not self.current_func_tree is None:
-            new_exp = AST.assignment_expression()
-            new_exp.left_oprand = AST.terminal_expression("identifier",var_name)
-            new_exp.right_oprand = AST.terminal_expression("identifier",argN_name)
-            self.current_func_tree.push_expression(new_exp)
 
  	self.program_stack_changes.extend(["read","pop"])
 	for i in range(0,index):
@@ -611,7 +598,7 @@ class Environment(object):
 
         if arg < 0:
             dir = -1
-            mag = abs(arg) - 2
+            mag = abs(arg)
         else:
             dir = 1
             mag = abs(arg)
@@ -722,7 +709,7 @@ class Environment(object):
 		        loopIR = IR.LoopBlock(condition,'TRUE',if_else_block.IR.nesting_level)
 		        loop_stmt.LOOP_BLOCK = loopIR
 		        loopIR.statement_id = if_else_block.if_stmt.id
-			executor.ignored_insts.add(current_instruction.predecessor)
+			#executor.ignored_insts.add(current_instruction.predecessor)
                         # construct instructions list of loop body
 
 	                if if_else_block.IR.mode == 'THEN':
@@ -737,7 +724,7 @@ class Environment(object):
 				# add this part of code into ignored list
 				for i in range(0,upper_index):
 				    executor.ignored_insts.add(if_else_block.IR.if_instructions[i])
-			        
+				loopIR.loop_size = len(if_else_block.IR.if_instructions)-1
 
 
 	                else:
@@ -754,8 +741,8 @@ class Environment(object):
                                 for i in range(0,upper_index):
                                     executor.ignored_insts.add(if_else_block.IR.else_instructions[i])
 
-
-
+				loopIR.loop_size = len(if_else_block.IR.else_instructions)
+	
 		        # if the jump instruction jumps out 1 layer,append the instructions outside this layer of if
 		        # to the body of while loop
 		        if num_of_layers_crossed == 1:
@@ -766,7 +753,6 @@ class Environment(object):
 					tmp = tmp.successors[len(tmp.successors)-1]
 				    else:
 					tmp = tmp.successors[0]
-
 
 		        # construct else instructions for loop
 		        if len(if_else_block.if_stmt.successors)==3:
@@ -1353,7 +1339,7 @@ class Environment(object):
     def exec_SFVFS(self):
 	self.program_stack_changes.extend(["read","read","pop","pop"])
         args = self.program_stack_pop_many(2)
-        self.current_instruction_intermediate.append(IR.SFVFSMethodCall([args]))
+        self.current_instruction_intermediate.append(IR.SFVFSMethodCall(args))
 
     def exec_SFVTCA(self):
         data = int(self.current_instruction.data[0].value)
@@ -1501,19 +1487,19 @@ class Environment(object):
 
     def exec_SZP0(self):
         self.program_stack_changes.extend(["read","pop"])
-        arg = self.program_stack_pop()
+        arg = self.program_stack_pop().eval(False)
         assert (arg is 1 or arg is 0)
         self.current_instruction_intermediate.append(IR.CopyStatement(IR.ZP0(), arg))
 
     def exec_SZP1(self):
         self.program_stack_changes.extend(["read","pop"])
-        arg = self.program_stack_pop()
+        arg = self.program_stack_pop().eval(False)
         assert (arg is 1 or arg is 0)
         self.current_instruction_intermediate.append(IR.CopyStatement(IR.ZP1(), arg))
 
     def exec_SZP2(self):
         self.program_stack_changes.extend(["read","pop"])
-        arg = self.program_stack_pop()
+        arg = self.program_stack_pop().eval(False)
         assert (arg is 1 or arg is 0)
         self.current_instruction_intermediate.append(IR.CopyStatement(IR.ZP2(), arg))
 
@@ -1611,6 +1597,8 @@ class Environment(object):
         self.program_stack_changes.extend(["read","read","pop","pop"])
         fn = self.program_stack_pop().eval(False)
         count = self.program_stack_pop().eval(False)
+	print fn,count
+	
         #self.current_instruction_intermediate.append(IR.LoopCallStatement(fn, count))
 
     def exec_CALL(self):
@@ -1961,6 +1949,7 @@ class Executor(object):
     def execute_CALL(self,repeats=1,is_loopcall=False):
         # actually we *always* want to get the concrete callee
 	callee = self.environment.program_stack[-1].eval(False)
+	print 'calling func ',callee
 	if not is_loopcall and (not self.current_instruction.id in self.bytecode2ir.keys()):
 	    self.setIRForBytecode(self.current_instruction,[IR.CallStatement(callee)])
 	if isinstance(callee,dataType.AbstractValue):
@@ -2301,93 +2290,37 @@ class Executor(object):
         self.environment.minimum_stack_depth = 0
 	self.current_tag = tag
 	self.program_size = len(program.body.instructions)
-	largest = 0
+	#largest = 0
 
+	# show current process on 'prep'
 	if not self.current_tag == 'prep':
 	    self.print_progress('glyf')
+
+
         while  self.current_instruction is not  None:
+
+	    # update and show current process on 'prep'
 	    if self.current_instruction.id.startswith('prep'):
 		self.current_progress < int(self.current_instruction.id[5:])
 		self.current_progress = int(self.current_instruction.id[5:])
 	        self.print_progress('prep')
 	
-
-	    # get the deepest vest, set the current instruction to the vest and take it off
+	    # get the deepst vest, set the current instruction to the vest and take it off
 	    holder = self.current_instruction
 	    while self.current_instruction.vest is not  None:
 	    	holder = self.current_instruction
 		self.current_instruction = self.current_instruction.vest 
-		
 	    holder.vest = None
+
+
+	    # If the instruction is ENDF, but if else stack is not empty, this is caused by jump inst targeted to ENDF
+            # in this case, the program structure was re-arrange and need to set the pointer to the successor of ENDF 
 	    if self.current_instruction.mnemonic == 'ENDF' and len(self.if_else_stack) > 0:
 		if len(self.current_instruction.successors) > 0:
 	           self.current_instruction = self.current_instruction.successors[0]
 		   continue
 
-	    if not self.uncertain_callee_backup is None:
-                if self.current_instruction.mnemonic in ['SZP0','SZP1','SZP2']:
-            	    if not (self.environment.program_stack[-1] is 0 or self.environment.program_stack[-1] is 1):
-
-                        print 'this function does not work,restore executor status...'
-                        self.environment = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.environment)
-                        self.if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.if_else_stack)
-                        for i in range(0,len(self.if_else_stack)):
-                              self.if_else_stack[i].if_stmt.successors = self.uncertain_callee_backup.backup_executor_status.if_else_stack[i].if_stmt.successors
-                              self.if_else_stack[i].if_stmt.predecessor = self.uncertain_callee_backup.backup_executor_status.if_else_stack[i].if_stmt.predecessor
-
-                        self.current_instruction = self.uncertain_callee_backup.backup_executor_status.current_instruction
-                        self.maximum_stack_depth = self.uncertain_callee_backup.backup_executor_status.maximum_stack_depth
-                        self.call_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack)
-                        for i in range(0,len(self.uncertain_callee_backup.backup_executor_status.call_stack)):
-
-                           new_if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4])
-
-                           for j in range(0,len(new_if_else_stack)):
-                               new_if_else_stack[j].if_stmt = self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4][j].if_stmt
-
-                           oldtuple = self.call_stack[i]
-                           newtuple = (oldtuple[0],self.uncertain_callee_backup.backup_executor_status.call_stack[i][1],self.uncertain_callee_backup.backup_executor_status.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtuple[8],oldtuple[9])
-                           self.call_stack[i] = newtuple
-
-
-                        self.visited_functions = self.uncertain_callee_backup.backup_executor_status.visited_functions
-                        self.bytecode2ir = self.uncertain_callee_backup.backup_executor_status.bytecode2ir
-                        self.already_seen_insts = self.uncertain_callee_backup.backup_executor_status.already_seen_insts
-                        self.uncertain_callee_backup.function_itr += 1
-                        continue
-
-        
-
-	    if len(self.environment.program_stack)<self.num_pop(self.current_instruction) and (not self.uncertain_callee_backup is None):
-                  print 'this function does not work,restore executor status...'
-                  self.environment = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.environment)
-                  self.if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.if_else_stack)
-		  for i in range(0,len(self.if_else_stack)):
-			self.if_else_stack[i].if_stmt.successors = self.uncertain_callee_backup.backup_executor_status.if_else_stack[i].if_stmt.successors
-			self.if_else_stack[i].if_stmt.predecessor = self.uncertain_callee_backup.backup_executor_status.if_else_stack[i].if_stmt.predecessor
-
-		  self.current_instruction = self.uncertain_callee_backup.backup_executor_status.current_instruction
-                  self.maximum_stack_depth = self.uncertain_callee_backup.backup_executor_status.maximum_stack_depth
-                  self.call_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack)
-                  for i in range(0,len(self.uncertain_callee_backup.backup_executor_status.call_stack)):
-
-                     new_if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4])
-
-                     for j in range(0,len(new_if_else_stack)):
-                         new_if_else_stack[j].if_stmt = self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4][j].if_stmt
-
-                     oldtuple = self.call_stack[i]
-                     newtuple = (oldtuple[0],self.uncertain_callee_backup.backup_executor_status.call_stack[i][1],self.uncertain_callee_backup.backup_executor_status.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtuple[8],oldtuple[9])
-                     self.call_stack[i] = newtuple
-
-
-                  self.visited_functions = self.uncertain_callee_backup.backup_executor_status.visited_functions
-                  self.bytecode2ir = self.uncertain_callee_backup.backup_executor_status.bytecode2ir
-                  self.already_seen_insts = self.uncertain_callee_backup.backup_executor_status.already_seen_insts
-                  self.uncertain_callee_backup.function_itr += 1
-                  continue
-
-                
+            # print log info 
             logger.info("     program_stack is %s" % (str(map(lambda s:s.eval(False), self.environment.program_stack))))
             if self.current_instruction.data is not None:
                 logger.info("[pc] %s->%s|%s",self.current_instruction.id, self.current_instruction.mnemonic,map(lambda x:x.value, self.current_instruction.data))
@@ -2395,36 +2328,9 @@ class Executor(object):
                 logger.info("[pc] %s->%s",self.current_instruction.id,self.current_instruction.mnemonic)
             logger.info("     succs are %s", self.current_instruction.successors)
             logger.info("     call_stack len is %s", len(self.call_stack))
+
+	    # CALL/LOOPCALL
             if self.current_instruction.mnemonic == 'CALL' or self.current_instruction.mnemonic == 'LOOPCALL':
-	        if not isinstance(self.environment.program_stack[-1].eval(False),dataType.AbstractValue):
-		    if not self.environment.program_stack[-1].eval(False) in self.bytecodeContainer.function_table and not self.uncertain_callee_backup is None:
-			print 'this function does not work,restore executor status.function not defined'
-                        self.environment = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.environment)
-                        self.if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.if_else_stack)
-                        for i in range(0,len(self.if_else_stack)):
-                              self.if_else_stack[i].if_stmt.successors = self.uncertain_callee_backup.backup_executor_status.if_else_stack[i].if_stmt.successors
-                              self.if_else_stack[i].if_stmt.predecessor = self.uncertain_callee_backup.backup_executor_status.if_else_stack[i].if_stmt.predecessor
-
-			self.current_instruction = self.uncertain_callee_backup.backup_executor_status.current_instruction
-                        self.maximum_stack_depth = self.uncertain_callee_backup.backup_executor_status.maximum_stack_depth
-                        self.call_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack)
-                        
-                        for i in range(0,len(self.uncertain_callee_backup.backup_executor_status.call_stack)):
-
-                             new_if_else_stack = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4])
-
-                             for j in range(0,len(new_if_else_stack)):
-                                 new_if_else_stack[j].if_stmt = self.uncertain_callee_backup.backup_executor_status.call_stack[i][-4][j].if_stmt
-
-                             oldtuple = self.call_stack[i]
-                             newtuple = (oldtuple[0],self.uncertain_callee_backup.backup_executor_status.call_stack[i][1],self.uncertain_callee_backup.backup_executor_status.call_stack[i][2],oldtuple[3],oldtuple[4],oldtuple[5],new_if_else_stack,oldtuple[7],oldtuple[8],oldtuple[9])
-                             self.call_stack[i] = newtuple
- 
-			self.visited_functions = self.uncertain_callee_backup.backup_executor_status.visited_functions
-                        self.bytecode2ir = self.uncertain_callee_backup.backup_executor_status.bytecode2ir
-                        self.already_seen_insts = self.uncertain_callee_backup.backup_executor_status.already_seen_insts
-                        self.uncertain_callee_backup.function_itr += 1
-                        continue
 		if self.current_instruction.mnemonic == 'CALL':
 		    self.execute_CALL()
 		else:
@@ -2448,10 +2354,11 @@ class Executor(object):
 	    # convert JROT and JROF to JMPR embedded in an if-else block
 	    # this will modify the function for future calls
             if self.current_instruction.mnemonic == 'JROT' or self.current_instruction.mnemonic == 'JROF':
-		instructions = program.body.instructions
+	        # get the instruction list of program, if in an fpgm, get the instruction of the fpgm instead
 		if len(self.call_stack)>0:
                     instructions = self.bytecodeContainer.function_table[self.call_stack[-1][0]].instructions
-
+		else:
+		    instructions = program.body.instructions
 
                 if_statement = statements.all.IF_Statement()
                 jump_statement = statements.all.JMPR_Statement()
@@ -2742,13 +2649,21 @@ class Executor(object):
 
 		    else:
 			self.if_else_stack.pop()
+			itr = 0
+			loopsize = 0
 	                for inst in block.loop_instructions:
 			    if inst.mnemonic == 'IF':
 				block.loop_ir.append(inst.If_Else_Block)
+				if itr<loopsize:
+				    loopsize+=1
+				itr+=1
 			    else:
 			    	block.loop_ir.extend(self.bytecode2ir[inst.id])
+				if itr<block.loop_size:
+				   loopsize += len(self.bytecode2ir[inst.id])
+				itr += 1
 			    	#self.ignored_insts.add(inst)
-
+			block.loop_size = loopsize
 			for inst in block.else_instructions:
 			    if inst.mnemonic == 'IF':
 				block.else_ir_append(inst.If_Else_Block)

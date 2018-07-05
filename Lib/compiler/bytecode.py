@@ -242,6 +242,8 @@ class bytecode_producer:
 		string = "SCANTYPE[ ]"
 	    elif self.instruction == "SCVTCI":
 		string = "SCVTCI[ ]"
+	    elif self.instruction == "JMPR":
+		string = "JMPR[ ]"
 	    elif self.instruction == "SFVTCA":
 		string = "SFVTCA["+str(self.data[0].value)+"]"
 	    elif self.instruction == "SPVTCA":
@@ -851,6 +853,32 @@ class bytecode_producer:
 				    continue
 	    # this is not an assignment exp
             else:
+		if isinstance(exp,AST.loop_expression):
+		    if_stmt = self.statement()
+		    if_stmt.instruction = 'IF'
+		    self.program.append(if_stmt)
+		    self.variable_stack.pop()
+		    loop_body = exp.loop_branch[0:exp.loop_size]
+		    stack_len_before_loop = len(self.variable_stack)
+
+		    self.process_expressions(loop_body)
+
+		    stack_len_after_loop = len(self.variable_stack)
+		    jmpr_stmt = self.statement()
+		    jmpr_stmt.instruction = 'JMPR'
+		    eif_stmt = self.statement()
+		    eif_stmt.instruction = 'EIF'
+		    self.program.append(jmpr_stmt)
+		    self.program.append(eif_stmt)
+		    self.variable_stack.pop()
+		    
+		    for k in range(0,stack_len_after_loop-stack_len_before_loop):
+			pop_stmt = self.statement()
+			pop_stmt.instruction = 'POP'
+			self.program.append(pop_stmt)
+
+			
+
 		if isinstance(exp,AST.if_expression):
 		    # declare variable stack backup variables
 		    var_stack_after_if_branch = None
@@ -984,11 +1012,23 @@ class bytecode_producer:
 			    for k in range(0,-exp.stack_effect*repeats):
 			        self.variable_stack.pop()
 			elif exp.stack_effect > 0:
-			    tag = self.variable_stack[-1].key.value.split('_')[0]
-			    if self.function.function_type == "fpgm":
-				tag = tag + '_' + str(self.function.function_num) + '_'
+			    tag = '$'
+			    if len(self.variable_stack) == 0:
+				if not self.function.function_type == 'fpgm':
+				    if self.function.function_tag == None:
+					tag = tag+'prep_'
+				    else:
+				        tag = tag+self.function.function_tag+'_'
+				    
+				else:
+				    tag += 'fpgm_'
 			    else:
-				tag = tag + '_'
+			        tag = self.variable_stack[-1].key.value.split('_')[0]
+
+			        if self.function.function_type == "fpgm":
+				    tag = tag + '_' + str(self.function.function_num) + '_'
+			        else:
+				    tag = tag + '_'
 
 
 			    for k in range(0,exp.stack_effect*repeats):

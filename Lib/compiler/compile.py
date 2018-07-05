@@ -158,6 +158,7 @@ class compiler:
 	    bp.generate_code(ast.prep_function) 
 
 	for f in ast.glyph_functions:
+	    print 'glyf',f.function_tag
 	    bp.generate_code(f)
 
 	sys.stdout.write(CURSOR_UP)

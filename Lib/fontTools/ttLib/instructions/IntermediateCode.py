@@ -285,9 +285,11 @@ class MethodCallStatement(object):
 	elif isinstance(self,LoopCallStatement):
 	    return 'LOOPCALL '+str(self.callee)+' '+str(self.repeats)+' '+str(self.call_arg_list)
         repS = ''
+	print 'method name=',self.methodName
         if self.returnVal is not None:
             repS = str(self.returnVal) + ' := '
     	repS += '{}('.format(self.methodName)
+	print self.methodName
         repS += ','.join(map(lambda x: str(x.identifier), self.parameters))
         repS += ')'
 	return repS
@@ -911,7 +913,15 @@ class JROxStatement(object):
 
 
 class LoopBlock(object):
+    def push_expression(self,func_tree):
+        exp = AST.loop_expression()
+	exp.loop_size = self.loop_size
+        func_tree.push_expression(exp)
+ 	func_tree.branch_stack.append(exp)
+	self.function_tree = func_tree	
+
     def __init__(self,condition = None,mode = 'TRUE',nesting_level = 1):
+       self.function_tree = None
        self.condition = condition
        self.mode = mode
        self.loop_instructions = []
@@ -920,6 +930,9 @@ class LoopBlock(object):
        self.else_ir = []
        self.nesting_level = nesting_level
        self.statement_id = None
+       self.if_stmt = None
+       self.loop_size = 0
+
     def __str__(self):
        c = self.condition.eval(True)
        if isinstance(c,dataType.UncertainValue):
@@ -931,6 +944,7 @@ class LoopBlock(object):
        else:
 	   res_str += (self.nesting_level-1)*4*' '+'while ( not '+str(c)+' ) {\n'
        for inst in self.loop_ir:
+	   inst.push_expression(self.function_tree)
            if isinstance(inst,IfElseBlock):
                 res_str += ((self.nesting_level) * 4 * ' ') + str(inst) + '\n'
            else:
@@ -943,7 +957,7 @@ class LoopBlock(object):
            else:
                 res_str += ((self.nesting_level-1) * 4 * ' ') + str(inst) + '\n'
 
-
+       self.function_tree.branch_stack.pop()
        return res_str
 
 

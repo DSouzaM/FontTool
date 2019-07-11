@@ -528,7 +528,8 @@ class all():
             self.push_num =  0 
             self.pop_num =  1 
             self.total_num = -1
-	    self.adjust_target = 0
+      # whether this JMPR was generated from a JROT/JROF
+	    self.is_from_conditional_jump = False
 	    self.is_re_arranged = False
 	    self.target = None
 	    # if is_re_arranged is True

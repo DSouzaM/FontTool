@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/home/zeming/Desktop/project/fonttools/Lib/compiler')
+sys.path.append('/Users/matt/school/FontTool/Lib/compiler')
 from fontTools.ttLib.data import dataType
 import AST
 import logging
@@ -563,31 +563,23 @@ class Environment(object):
         else:
             return self.bytecodeContainer.tag_to_programs[self.tag].body
 
-    def evaluate_operations(self,arg):
-        if isinstance(arg,IR.UnaryExpression):
+    def evaluate_operations(self, arg):
+        if isinstance(arg, IR.UnaryExpression):
             if arg.operator == 'NEG':
-		return (True,-arg.arg)
-	return (False,None)
+                return (True, -arg.arg)
+        return (False, None)
 
-
-
-    def adjust_succ_for_relative_jump(self, current_instruction, arg, mnemonic,if_else_stack,ignored_insts,function_instructions_list,bytecode2ir,executor):
-        only_succ = mnemonic == 'JMPR'
+    def adjust_succ_for_relative_jump(self, current_instruction, arg, if_else_stack, ignored_insts, function_instructions_list, bytecode2ir, executor):
 	#print 'enter adjust succ'
         # find the instructions and set the PC
         # returns (True, _) if we broke a cycle
         # also returns the jump successor
-	## The cross_list records the control flow instructions crossed 
-	flow_control_insts_cross_list = []
-        skip_list = []
-        jump_to_return = False
-	if isinstance(arg,dataType.AbstractValue):
-	    (explicit,arg) = self.evaluate_operations(arg)
-	    if not explicit:
-		sys.exit()
 
-        assert not isinstance(arg, dataType.AbstractValue)
-	#print 'jump offset=',arg
+        # The cross_list records the control flow instructions crossed
+        flow_control_insts_cross_list = []
+        skip_list = []
+
+        # Find the index of current_instruction
         ins = self.fetch_body_for_tag(self.tag).instructions
         pc = 0
         for i in range(len(ins)):
@@ -596,43 +588,71 @@ class Environment(object):
             pc += 1
         assert pc < len(ins)
 
+        # Check offset argument
+        if isinstance(arg, dataType.AbstractValue):
+                (explicit, arg) = self.evaluate_operations(arg)
+                if not explicit:
+                        print("Relative jump offset is not explicit. Exiting.")
+                        sys.exit()
+
+        assert not isinstance(arg, dataType.AbstractValue)
+
+        mag = abs(arg)
         if arg < 0:
             dir = -1
-            mag = abs(arg)
         else:
             dir = 1
-            mag = abs(arg)
-	mag += current_instruction.adjust_target
-        while mag > 0:
-            ci_size = 1
-	    if ins[pc].mnemonic in ['NPUSHB','NPUSHW']:
-		mag -= 1
-            for d in ins[pc].data:
-	      if not ins[pc].mnemonic in ['SHP','SVTCA']:
-                ci_size += 2 if d.is_word else 1
-            mag = mag - ci_size
-            pc += dir
-            if pc == len(ins)-1 and mag == 1:
-                jump_to_return = True
-                break
-	    ## catch the crossed control flow instructions
-            #print ins[pc],mag 
-	    crossing_instruction = ins[pc]
-	    if crossing_instruction.mnemonic == 'IF' or crossing_instruction.mnemonic == 'ELSE' or crossing_instruction.mnemonic == 'EIF':
-	    	flow_control_insts_cross_list.append(crossing_instruction)
-		skip_list.append(crossing_instruction)
-	    else:
-		skip_list.append(crossing_instruction)
-		
+
+        # Every occurrence of
+        # i    JROT[ ]/JROF[ ]
+        # gets replaced by
+        # i    IF[ ]
+        # i+1  JMPR[ ]
+        # i+2  ELSE[ ]
+        # i+3  POP[ ]
+        # i+4  EIF[ ]
+        # Consequently, if this JMPR was originally a JROT/JROF, adjust the offset accordingly
+        if current_instruction.is_from_conditional_jump:
+                mag += 3 if arg > 0 else 1
+
+        def instruction_size(instruction):
+                size = 1
+                if instruction.mnemonic in ["NPUSHB", "NPUSHW"]:
+                        size += 1
+                if instruction.mnemonic not in ["SHP", "SVTCA"]:
+                        for d in instruction.data:
+                                size += 2 if d.is_word else 1
+                return size
+
+        # Move PC by offset, marking skipped instructions
+        if dir == -1:
+                while mag > 0 and pc > 0:
+                        pc -= 1
+                        crossing_instruction = ins[pc]
+                        mag -= instruction_size(crossing_instruction)
+                        if mag > 0:
+                                # When mag == 0, this instruction is the target (and isn't skipped).
+                                skip_list.append(crossing_instruction)
+                                if crossing_instruction.mnemonic in ["IF", "ELSE", "EIF"]:
+                                        flow_control_insts_cross_list.append(crossing_instruction)
+        else:
+                while mag > 0 and pc < len(ins):
+                        crossing_instruction = ins[pc]
+                        mag -= instruction_size(crossing_instruction)
+                        skip_list.append(crossing_instruction)
+                        if crossing_instruction.mnemonic in ["IF", "ELSE", "EIF"]:
+                                flow_control_insts_cross_list.append(crossing_instruction)
+        assert mag == 0, "Failed to translate relative jump"
 
 	target = ins[pc]
 	current_instruction.target = target
+        # TODO: I think this case is only an infinite loop if the branch is backward. If it's forward, there's no loop.
         if len(flow_control_insts_cross_list) == 0:
-               print 'while (TRUE){'
-               for i in range(1,len(skip_list)):
-                   print '    ', skip_list[-i].id,' : ',skip_list[-i]
-               print '}'
-               sys.exit('infinite loop detected, quit!')
+                print 'while (TRUE){'
+                for i in range(1,len(skip_list)):
+                        print '    ', skip_list[-i].id,' : ',skip_list[-i]
+                print '}'
+                sys.exit('infinite loop detected, quit!')
         # only interested in the jump which crosses the flow control instructions
 	if len(flow_control_insts_cross_list) > 0:
 		
@@ -743,16 +763,19 @@ class Environment(object):
 
 				loopIR.loop_size = len(if_else_block.IR.else_instructions)
 	
-		        # if the jump instruction jumps out 1 layer,append the instructions outside this layer of if
-		        # to the body of while loop
-		        if num_of_layers_crossed == 1:
+                        # if the jump instruction jumps out 1 layer,append the instructions outside this layer of if
+                        # to the body of while loop
+                        if num_of_layers_crossed == 1:
                                 tmp = skip_list[-1]
                                 while tmp.id != loopIR.statement_id:
-			            loopIR.loop_instructions.append(tmp)
-				    if tmp.mnemonic == 'IF':
-					tmp = tmp.successors[len(tmp.successors)-1]
-				    else:
-					tmp = tmp.successors[0]
+                                        loopIR.loop_instructions.append(tmp)
+                                        if tmp.mnemonic == 'IF':
+                                                tmp = tmp.successors[len(tmp.successors)-1]
+                                        else:
+                                                try:
+                                                        tmp = tmp.successors[0]
+                                                except IndexError:
+                                                        import ipdb; ipdb.set_trace()
 
 		        # construct else instructions for loop
 		        if len(if_else_block.if_stmt.successors)==3:
@@ -1080,8 +1103,7 @@ class Environment(object):
 
         logger.info("relative jump target is %s" % ins[pc])
 
-        if only_succ:
-            current_instruction.successors = []
+        current_instruction.successors = []
         if target not in self.current_instruction.successors:
             self.already_seen_jmpr_targets.setdefault(self.tag, [])
             if not target in self.already_seen_jmpr_targets[self.tag]:
@@ -2296,21 +2318,18 @@ class Executor(object):
 	if not self.current_tag == 'prep':
 	    self.print_progress('glyf')
 
-
         while  self.current_instruction is not  None:
+            # update and show current process on 'prep'
+            if self.current_instruction.id.startswith('prep'):
+                self.current_progress = int(self.current_instruction.id[5:])
+                self.print_progress('prep')
 
-	    # update and show current process on 'prep'
-	    if self.current_instruction.id.startswith('prep'):
-		self.current_progress < int(self.current_instruction.id[5:])
-		self.current_progress = int(self.current_instruction.id[5:])
-	        self.print_progress('prep')
-	
-	    # get the deepst vest, set the current instruction to the vest and take it off
-	    holder = self.current_instruction
-	    while self.current_instruction.vest is not  None:
-	    	holder = self.current_instruction
-		self.current_instruction = self.current_instruction.vest 
-	    holder.vest = None
+            # get the deepst vest, set the current instruction to the vest and take it off
+            holder = self.current_instruction
+            while self.current_instruction.vest is not None:
+                holder = self.current_instruction
+                self.current_instruction = self.current_instruction.vest
+            holder.vest = None
 
 
 	    # If the instruction is ENDF, but if else stack is not empty, this is caused by jump inst targeted to ENDF
@@ -2351,68 +2370,61 @@ class Executor(object):
             is_reexecuting = False
             store_env = True
 
-	    # convert JROT and JROF to JMPR embedded in an if-else block
-	    # this will modify the function for future calls
+            # convert JROT and JROF to JMPR embedded in an if-else block
+            # this will modify the function for future calls
             if self.current_instruction.mnemonic == 'JROT' or self.current_instruction.mnemonic == 'JROF':
-	        # get the instruction list of program, if in an fpgm, get the instruction of the fpgm instead
-		if len(self.call_stack)>0:
+                # get the instruction list of program, if in an fpgm, get the instruction of the fpgm instead
+                if len(self.call_stack)>0:
                     instructions = self.bytecodeContainer.function_table[self.call_stack[-1][0]].instructions
-		else:
-		    instructions = program.body.instructions
+                else:
+                    instructions = program.body.instructions
 
                 if_statement = statements.all.IF_Statement()
                 jump_statement = statements.all.JMPR_Statement()
                 if self.current_instruction.mnemonic == 'JROF':
                     if_statement.reverse = True
-		else_statement = statements.all.ELSE_Statement()
-		pop_statement = statements.all.POP_Statement()
+                else_statement = statements.all.ELSE_Statement()
+                pop_statement = statements.all.POP_Statement()
                 eif_statement = statements.all.EIF_Statement()
                 import re
                 cur_id = next(re.finditer(r'\d+$', self.current_instruction.id)).group(0)
-                prefix = self.current_instruction.id[:len(self.current_instruction.id)-len(cur_id)]
-                cur_id = int(next(re.finditer(r'\d+$', self.current_instruction.id)).group(0))
+                prefix = self.current_instruction.id[:-len(cur_id)]
+                cur_id = int(cur_id)
                 if_statement.id = self.current_instruction.id
-                jump_statement.id = prefix + str(cur_id+1)
-		else_statement.id = prefix + str(cur_id+2)
-		pop_statement.id = prefix + str(cur_id+3)
-	        eif_statement.id = prefix + str(cur_id+4)	
 
                 self.current_instruction.predecessor.successors[0] = if_statement
                 if_statement.add_successor(jump_statement)
                 if_statement.add_successor(else_statement)
-		if_statement.add_successor(eif_statement)
+                if_statement.add_successor(eif_statement)
                 jump_statement.add_successor(else_statement)
-		else_statement.add_successor(pop_statement)
-		pop_statement.add_successor(eif_statement)
+                else_statement.add_successor(pop_statement)
+                pop_statement.add_successor(eif_statement)
                 eif_statement.add_successor(self.current_instruction.successors[0])
-		else_statement.IF = if_statement
-		eif_statement.IF = if_statement
+                else_statement.IF = if_statement
+                eif_statement.IF = if_statement
 
                 eif_statement.set_predecessor(if_statement)
-		else_statement.set_predecessor(if_statement)
+                else_statement.set_predecessor(if_statement)
                 jump_statement.set_predecessor(if_statement)
-		pop_statement.set_predecessor(else_statement)
+                pop_statement.set_predecessor(else_statement)
                 if_statement.predecessor = self.current_instruction.predecessor
                 self.current_instruction.successors[0].set_predecessor(eif_statement)
-		instructions = program.body.instructions
-	        if len(self.call_stack) > 0:
-		    instructions = self.bytecodeContainer.function_table[self.call_stack[-1][0]].instructions
 	
-		start_id =  int(next(re.finditer(r'\d+$', instructions[0].id)).group(0))
-		cur_id -= start_id
-		instructions.remove(self.current_instruction)
-		instructions.insert(cur_id , if_statement)
-		instructions.insert(cur_id+1,jump_statement)
-		instructions.insert(cur_id+2,else_statement)
-		instructions.insert(cur_id+3,pop_statement)
-		instructions.insert(cur_id+4,eif_statement)
+                start_id =  int(next(re.finditer(r'\d+$', instructions[0].id)).group(0))
+                current_index = instructions.index(self.current_instruction)
+                instructions.remove(self.current_instruction)
+                instructions.insert(current_index  ,if_statement)
+                instructions.insert(current_index+1,jump_statement)
+                instructions.insert(current_index+2,else_statement)
+                instructions.insert(current_index+3,pop_statement)
+                instructions.insert(current_index+4,eif_statement)
                 for i in range(0,len(instructions)):
-		    instructions[i].id = prefix + str(start_id + i)
+                    instructions[i].id = prefix + str(start_id + i)
 
-		self.current_instruction = if_statement
+                self.current_instruction = if_statement
 
- 		jump_statement.adjust_target += 3;
-		continue
+                jump_statement.is_from_conditional_jump = True
+                continue
 
             if self.current_instruction.mnemonic == 'IF':
                 if len(self.if_else_stack) > 0 and self.if_else_stack[-1].if_stmt == self.current_instruction and self.if_else_stack[-1].state > 0:
@@ -2517,19 +2529,12 @@ class Executor(object):
 	    if self.current_instruction.mnemonic == 'JMPR':
 		logger.info("     program_stack is %s" % (str(map(lambda s:s.eval(False), self.environment.program_stack))))
 		#	self.current_instruction.vest = self.current_instruction.successors[0]
-		#	print 'enter there'
-		#	continue
-
-                if self.current_instruction.mnemonic == 'JROT' or self.current_instruction.mnemonic == 'JROF':
-                    e = self.environment.program_stack_pop().eval(self.environment.keep_abstract)
-                else:
-                    e = None
-                dest = self.environment.program_stack_pop().eval(False)
+                dest = self.environment.program_stack_pop().eval(keep_abstract=False)
 		instructions_list = program.body.instructions
 		if len(self.call_stack) > 0:
                     callee=self.call_stack[-1][0]
                     instructions_list=self.bytecodeContainer.function_table[callee].instructions
-                branch_succ = self.environment.adjust_succ_for_relative_jump(self.current_instruction, dest, self.current_instruction.mnemonic,self.if_else_stack,self.ignored_insts,instructions_list,self.bytecode2ir,self)
+                branch_succ = self.environment.adjust_succ_for_relative_jump(self.current_instruction, dest, self.if_else_stack, self.ignored_insts, instructions_list, self.bytecode2ir, self)
                 logger.info("     adjusted succs now %s", self.current_instruction.successors)
 	    
 	    ir.extend(self.environment.execute_current_instruction(self.current_instruction))
@@ -2592,8 +2597,7 @@ class Executor(object):
 			        else:
 				    print 'this function does not work,restore executor status...'
 				    if self.uncertain_callee_backup == None:
-					print "wrong"
-					
+					print "wrong (%s)" % self.current_tag
 					sys.exit()
 					return
                                     self.environment = copy.deepcopy(self.uncertain_callee_backup.backup_executor_status.environment)

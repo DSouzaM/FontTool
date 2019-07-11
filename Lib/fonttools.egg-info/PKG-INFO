@@ -1,12 +1,13 @@
-Metadata-Version: 1.1
+Metadata-Version: 1.2
 Name: fonttools
-Version: 0+untagged.3550.g04a472c.dirty
+Version: 0+untagged.9.gb049cbf.dirty
 Summary: Tools to manipulate font files
 Home-page: http://github.com/fonttools/fonttools
-Author: Behdad Esfahbod
-Author-email: behdad@behdad.org
+Author: Just van Rossum
+Author-email: just@letterror.com
+Maintainer: Behdad Esfahbod
+Maintainer-email: behdad@behdad.org
 License: OpenSource, BSD-style
-Description-Content-Type: UNKNOWN
 Description: FontTools/TTX is a library to manipulate font files from Python.
         It supports reading and writing of TrueType/OpenType fonts, reading
         and writing of AFM files, reading (and partially writing) of PS Type 1

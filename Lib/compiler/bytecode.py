@@ -486,8 +486,8 @@ class bytecode_producer:
     def process_expressions(self,expressions):
         i = 0
         while i < len(expressions):
-	    exp = expressions[i]
-	    # if this is an assignment exp
+            exp = expressions[i]
+            # if this is an assignment exp
             if isinstance(exp,AST.assignment_expression):
 		# if the left oprand of this assignment exp is terminal type(identifier)
 	        if isinstance(exp.left_oprand,AST.terminal_expression):
@@ -851,26 +851,28 @@ class bytecode_producer:
 				    self.program.append(s)
 				    i += 1
 				    continue
-	    # this is not an assignment exp
+            # this is not an assignment exp
             else:
-		if isinstance(exp,AST.loop_expression):
-		    if_stmt = self.statement()
-		    if_stmt.instruction = 'IF'
-		    self.program.append(if_stmt)
-		    self.variable_stack.pop()
-		    loop_body = exp.loop_branch[0:exp.loop_size]
-		    stack_len_before_loop = len(self.variable_stack)
+                if isinstance(exp,AST.loop_expression):
+                    import ipdb; ipdb.set_trace()
+                    if_stmt = self.statement()
+                    if_stmt.instruction = 'IF'
+                    self.program.append(if_stmt)
+                    self.variable_stack.pop()
+                    loop_body = exp.loop_branch[0:exp.loop_size]
+                    stack_len_before_loop = len(self.variable_stack)
 
-		    self.process_expressions(loop_body)
+                    self.process_expressions(loop_body)
 
-		    stack_len_after_loop = len(self.variable_stack)
-		    jmpr_stmt = self.statement()
-		    jmpr_stmt.instruction = 'JMPR'
-		    eif_stmt = self.statement()
-		    eif_stmt.instruction = 'EIF'
-		    self.program.append(jmpr_stmt)
-		    self.program.append(eif_stmt)
-		    self.variable_stack.pop()
+                    stack_len_after_loop = len(self.variable_stack)
+                    jmpr_stmt = self.statement()
+                    jmpr_stmt.instruction = 'JMPR'
+                    eif_stmt = self.statement()
+                    eif_stmt.instruction = 'EIF'
+                    self.program.append(jmpr_stmt)
+                    self.program.append(eif_stmt)
+                    # TODO: I'm not sure if this needs to be here.
+                    self.variable_stack.pop()
 		    
 		    for k in range(0,stack_len_after_loop-stack_len_before_loop):
 			pop_stmt = self.statement()

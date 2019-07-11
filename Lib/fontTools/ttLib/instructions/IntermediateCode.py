@@ -2,7 +2,7 @@ from fontTools.ttLib.data import dataType
 import math
 import copy
 import sys
-sys.path.append('/home/zeming/Desktop/projects/fonttools/Lib/compiler')
+sys.path.append('/Users/matt/school/FontTool/Lib/compiler')
 import AST
 
 class Boolean(object):

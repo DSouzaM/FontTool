@@ -26,7 +26,7 @@ from fontTools.ttLib.instructions import statements, abstractExecute, Intermedia
 from fontTools.ttLib.data import dataType
 from fontTools.misc.util import makeOutputFileName
 import sys
-sys.path.append('/home/zeming/Desktop/projects/fonttools/Lib/compiler')
+sys.path.append('/Users/matt/school/FontTool/Lib/compiler')
 import AST
 import compile
 import os
@@ -90,7 +90,7 @@ def analysis(bytecodeContainer, glyphs,font_name):
     # NB: if there's no prep we don't explicitly output the initial graphics state
 
     environment_after_prep = abstractExecutor.environment
-    called_functions.update(executeGlyphs(abstractExecutor, environment_after_prep, glyphs,ast))
+    called_functions.update(executeGlyphs(abstractExecutor, environment_after_prep, glyphs, ast))
     return abstractExecutor, called_functions
 
 class Options(object):
@@ -265,7 +265,7 @@ def process(jobs, options):
           
             bc.removeFunctions(unused_functions)
             bc.updateTTFont(tt)
-            output = "Reduced"+origin
+            output = os.path.join(os.path.dirname(origin), "Reduced%s" % os.path.basename(origin))
             if (options.outputXML):
                 output = makeOutputFileName(output, ".ttx")
                 tt.saveXML(output)

@@ -6,11 +6,17 @@ dev-requirements.txt
 requirements.txt
 run-tests.sh
 setup.cfg
+setup.py
 tox.ini
 versioneer.py
 Doc/ttx.1
 Lib/sstruct.py
 Lib/xmlWriter.py
+Lib/compiler/AST.py
+Lib/compiler/__init__.py
+Lib/compiler/bytecode.py
+Lib/compiler/compile.py
+Lib/compiler/token.py
 Lib/fontTools/__init__.py
 Lib/fontTools/__main__.py
 Lib/fontTools/_version.py
@@ -287,7 +293,6 @@ Lib/fontTools/ttLib/instructions/abstractExecute.py
 Lib/fontTools/ttLib/instructions/generateStatements.py
 Lib/fontTools/ttLib/instructions/instructionConstructor.py
 Lib/fontTools/ttLib/instructions/statements.py
-Lib/fontTools/ttLib/instructions/test.py
 Lib/fontTools/ttLib/tables/B_A_S_E_.py
 Lib/fontTools/ttLib/tables/BitmapGlyphMetrics.py
 Lib/fontTools/ttLib/tables/C_B_D_T_.py

@@ -44,8 +44,8 @@ class function:
 	self.font_ast = None
         self.expressions = []
         self.branch_stack = []
-	self.arguments = []
-	self.stack_effect = 0
+        self.arguments = []
+        self.stack_effect = 0
 
     def push_expression(self,exp):
         if len(self.branch_stack) == 0:
@@ -57,9 +57,8 @@ class function:
                     top_branch.if_branch.append(exp)
                 else:
                     top_branch.else_branch.append(exp)
-	    elif isinstance(top_branch,loop_expression):
-  	        top_branch.loop_branch.append(exp)
-            
+            elif isinstance(top_branch,loop_expression):
+                top_branch.loop_branch.append(exp)
 
 
 # expressions are building block of blocks, it is a parent class

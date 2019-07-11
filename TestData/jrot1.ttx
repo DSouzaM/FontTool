@@ -1,7 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Subsetted version of GNU FreeFont (released under GPL).
-     This font includes only the glyph 'A'. -->
-<ttFont sfntVersion="\x00\x01\x00\x00" ttLibVersion="2.4">
+<?xml version="1.0" encoding="UTF-8"?>
+<ttFont sfntVersion="\x00\x01\x00\x00" ttLibVersion="0+untagged.9">
 
   <GlyphOrder>
     <!-- The 'id' attribute is only for humans; it is ignored when parsed. -->
@@ -13,16 +11,16 @@
     <!-- Most of this table will be recalculated by the compiler -->
     <tableVersion value="1.0"/>
     <fontRevision value="412.22679"/>
-    <checkSumAdjustment value="0x4cefeb96"/>
+    <checkSumAdjustment value="0xc34b95c5"/>
     <magicNumber value="0x5f0f3cf5"/>
     <flags value="00000010 10011111"/>
     <unitsPerEm value="1000"/>
     <created value="Mon May 21 18:20:24 2012"/>
-    <modified value="Mon May 21 18:20:24 2012"/>
-    <xMin value="-793"/>
-    <yMin value="-200"/>
-    <xMax value="699"/>
-    <yMax value="800"/>
+    <modified value="Wed Jul 10 17:25:41 2019"/>
+    <xMin value="9"/>
+    <yMin value="0"/>
+    <xMax value="591"/>
+    <yMax value="563"/>
     <macStyle value="00000000 00000000"/>
     <lowestRecPPEM value="8"/>
     <fontDirectionHint value="0"/>
@@ -31,14 +29,14 @@
   </head>
 
   <hhea>
-    <tableVersion value="1.0"/>
+    <tableVersion value="0x00010000"/>
     <ascent value="800"/>
     <descent value="-200"/>
     <lineGap value="0"/>
     <advanceWidthMax value="600"/>
-    <minLeftSideBearing value="-793"/>
-    <minRightSideBearing value="-578"/>
-    <xMaxExtent value="699"/>
+    <minLeftSideBearing value="9"/>
+    <minRightSideBearing value="9"/>
+    <xMaxExtent value="591"/>
     <caretSlopeRise value="1"/>
     <caretSlopeRun value="0"/>
     <caretOffset value="0"/>
@@ -54,10 +52,10 @@
     <!-- Most of this table will be recalculated by the compiler -->
     <tableVersion value="0x10000"/>
     <numGlyphs value="2"/>
-    <maxPoints value="480"/>
-    <maxContours value="120"/>
-    <maxCompositePoints value="168"/>
-    <maxCompositeContours value="16"/>
+    <maxPoints value="37"/>
+    <maxContours value="2"/>
+    <maxCompositePoints value="0"/>
+    <maxCompositeContours value="0"/>
     <maxZones value="2"/>
     <maxTwilightPoints value="1"/>
     <maxStorage value="2"/>
@@ -66,10 +64,12 @@
     <maxStackElements value="256"/>
     <maxSizeOfInstructions value="1546"/>
     <maxComponentElements value="8"/>
-    <maxComponentDepth value="5"/>
+    <maxComponentDepth value="0"/>
   </maxp>
 
   <OS_2>
+    <!-- The fields 'usFirstCharIndex' and 'usLastCharIndex'
+         will be recalculated by the compiler -->
     <version value="3"/>
     <xAvgCharWidth value="600"/>
     <usWeightClass value="400"/>
@@ -104,8 +104,8 @@
     <ulUnicodeRange4 value="00000000 00010000 00000000 00000000"/>
     <achVendID value="GNU "/>
     <fsSelection value="00000000 01000000"/>
-    <fsFirstCharIndex value="32"/>
-    <fsLastCharIndex value="65535"/>
+    <usFirstCharIndex value="65"/>
+    <usLastCharIndex value="65"/>
     <sTypoAscender value="800"/>
     <sTypoDescender value="-200"/>
     <sTypoLineGap value="0"/>
@@ -117,7 +117,7 @@
     <sCapHeight value="563"/>
     <usDefaultChar value="0"/>
     <usBreakChar value="32"/>
-    <usMaxContex value="4"/>
+    <usMaxContext value="4"/>
   </OS_2>
 
   <hmtx>
@@ -143,38 +143,38 @@
 
   <fpgm>
     <assembly>
-      PUSH[ ]
-      0
-      FDEF[ ]
-      PUSH[ ]
-      8
-      POP[ ]
-      PUSH[ ]
-      9
-      POP[ ]
-      PUSH[ ]
-      10
-      POP[ ]
-      PUSH[ ]
-      11
-      POP[ ]
-      MPPEM[ ]
-      PUSH[ ]
-      -15
-      JROT[ ]
-      PUSH[ ]
-      99
-      PUSH[ ]
-      100
-      ENDF[ ]
+      PUSHB[ ]	/* 1 value pushed */
+      0 
+      FDEF[ ]	/* FunctionDefinition */
+      PUSHB[ ]	/* 1 value pushed */
+      8 
+      POP[ ]	/* PopTopStack */
+      PUSHB[ ]	/* 1 value pushed */
+      9 
+      POP[ ]	/* PopTopStack */
+      PUSHB[ ]	/* 1 value pushed */
+      10 
+      POP[ ]	/* PopTopStack */
+      PUSHB[ ]	/* 1 value pushed */
+      11 
+      POP[ ]	/* PopTopStack */
+      PUSHW[ ]	/* 1 value pushed */
+      -16 /* word */ 
+      MPPEM[ ]	/* MeasurePixelPerEm */
+      JROT[ ]	/* JumpRelativeOnTrue */
+      PUSHB[ ]	/* 1 value pushed */
+      99 
+      PUSHB[ ]	/* 1 value pushed */
+      100 
+      ENDF[ ]	/* EndFunctionDefinition */
     </assembly>
   </fpgm>
 
   <prep>
     <assembly>
-      PUSH[ ]
-      0
-      CALL[ ]
+      PUSHB[ ]	/* 1 value pushed */
+      0 
+      CALL[ ]	/* CallFunction */
     </assembly>
   </prep>
 
@@ -248,7 +248,8 @@
         <pt x="286" y="522" on="1"/>
         <pt x="178" y="229" on="1"/>
       </contour>
-      <instructions><assembly></assembly></instructions>
+      <instructions><assembly>
+        </assembly></instructions>
     </TTGlyph>
 
   </glyf>
@@ -281,17 +282,17 @@
   </gasp>
 
   <GDEF>
-    <Version value="1.0"/>
-    <GlyphClassDef>
+    <Version value="0x00010000"/>
+    <GlyphClassDef Format="1">
       <ClassDef glyph="A" class="1"/>
     </GlyphClassDef>
-    <MarkAttachClassDef>
+    <MarkAttachClassDef Format="1">
       <ClassDef glyph=".notdef" class="0"/>
     </MarkAttachClassDef>
   </GDEF>
 
   <GPOS>
-    <Version value="1.0"/>
+    <Version value="0x00010000"/>
     <ScriptList>
       <!-- ScriptCount=0 -->
     </ScriptList>
@@ -304,7 +305,7 @@
   </GPOS>
 
   <GSUB>
-    <Version value="1.0"/>
+    <Version value="0x00010000"/>
     <ScriptList>
       <!-- ScriptCount=0 -->
     </ScriptList>

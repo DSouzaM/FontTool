@@ -3,7 +3,7 @@ import sys
 
 
 def fd_print(fd,string):
-    if not fd is None:
+    if fd:
         fd.write(string+"\n")
     else:
         print(string)
@@ -21,11 +21,11 @@ class BytecodeContainer(object):
         # tag id -> Program
         self.tag_to_programs = {}
         self.IRs = {}
-        # function_table: function label -> Function
+        # function label -> Function
         self.function_table = {}
-        #preprocess the static value to construct cvt table
+        # preprocess static values to construct cvt table
         self.constructCVTTable(tt)
-        #extract instructions from font file
+        # extract instructions from font file
         self.extractProgram(tt)
 
     def constructCVTTable(self, tt):
@@ -42,78 +42,79 @@ class BytecodeContainer(object):
         a dictionary maps tag->Program to extract all the bytecodes
         in a single font file
         '''
-        def constructInstructions(program_tag, instructions):
-            counter = [0]
-            def append_instruction(inst):
-                if parent_instruction is not None:
-                    parent_instruction.id = program_tag + '.' + str(counter[0])
-                    instructions_list.append(parent_instruction)
-                    counter[0] += 1
-            parent_instruction = None
+        def construct_instructions(program_tag, instructions):
             instructions_list = []
-            for i in instructions:
-                instructionCons = instructionConstructor.instructionConstructor(i)
-                instruction = instructionCons.getClass()
-                if isinstance(instruction, instructionConstructor.Data):
-                    parent_instruction.add_data(instruction)
-                else: 
-                    append_instruction(instruction)
-                    parent_instruction = instruction
 
-            append_instruction(parent_instruction)
+            for i in instructions:
+                instruction = instructionConstructor.instructionConstructor(i).getClass()
+                if isinstance(instruction, instructionConstructor.Data):
+                    instructions_list[-1].add_data(instruction)
+                else: 
+                    instruction.id = "%s.%d" % (program_tag, len(instructions_list))
+                    instructions_list.append(instruction)
+
 	    ## attach an ENDF statement to the end of each glyph program 
-	    if program_tag.startswith('glyf.'):
-		endf_statement = statements.all.ENDF_Statement()
-		endf_statement.id = program_tag + '.' + str(counter[0])
-		instructions_list.append(endf_statement)
+      # TODO: I commented this out. I don't think glyph programs are supposed to have ENDF? It was breaking the output.
+	#     if program_tag.startswith('glyf.'):
+	# 	endf_statement = statements.all.ENDF_Statement()
+	# 	endf_statement.id = "%s.%d" % (program_tag, len(instructions_list))
+	# 	instructions_list.append(endf_statement)
 
 	    return instructions_list
 
-
-        def add_tags_with_bytecode(tt,tag):
+        def add_tags_with_bytecode(tt, tag):
+            '''
+            For each table of the font with a program (including glyphs), construct an instruction list
+            and add it to the tag_to_programs mapping
+            '''
             for key in tt.keys():
                 if hasattr(tt[key], 'program'):
                     if len(tag) != 0:
                         program_tag = tag+"."+key
                     else:
                         program_tag = key
-                    self.tag_to_programs[program_tag] = constructInstructions(program_tag, tt[key].program.getAssembly())
+                    self.tag_to_programs[program_tag] = construct_instructions(program_tag, tt[key].program.getAssembly())
 		    
                 if hasattr(tt[key], 'keys'):
                     add_tags_with_bytecode(tt[key],tag+key)
-        # preprocess the function definition instructions between <fpgm></fpgm>
+
         def extract_functions():
+            '''
+            Process fpgm's instruction list to construct a mapping from function label (integer) to Function
+            '''
             if('fpgm' in self.tag_to_programs.keys()):
                 instructions = self.tag_to_programs['fpgm']
                 functionsLabels = []
-                skip = False
+                in_body = False
                 function_ptr = None
                 for instruction in instructions:
-                    if not skip:
+                    if not in_body:
                         if isinstance(instruction, statements.all.PUSH_Statement):
                             functionsLabels.extend(map(lambda x: x.value, instruction.data))
                         if isinstance(instruction, statements.all.FDEF_Statement):
-                            skip = True
+                            in_body = True
                             function_ptr = Function()
                     else:
-                        function_ptr.instructions.append(instruction)
                         if isinstance(instruction, statements.all.ENDF_Statement):
-                            skip = False
+                            in_body = False
                             function_label = functionsLabels[-1]
                             functionsLabels.pop()
                             self.function_table[function_label] = function_ptr
+                        else:
+                            function_ptr.instructions.append(instruction)
 
                 for key, value in self.function_table.items():
                     value.constructBody()
 
-
-        # transform list of instructions -> Program
         def setup_programs():
-            for key, instr in self.tag_to_programs.items():
+            '''
+            Convert each list of instructions (except for fpgm's) to a Program
+            '''
+            for key, instructions in self.tag_to_programs.items():
                 if key is not 'fpgm':
-                    self.tag_to_programs[key] = Program(instr)
+                    self.tag_to_programs[key] = Program(instructions)
 
-        add_tags_with_bytecode(tt,"")
+        add_tags_with_bytecode(tt, "")
         extract_functions()
         setup_programs()
 
@@ -207,21 +208,25 @@ class BytecodeContainer(object):
             assembly = []
             if table != 'fpgm':
                 root = self.tag_to_programs[table].body.statement_root
-                if root is not None:
-                    
-                    stack = []
-                    stack.append(root)
+                instruction = root
+                while instruction:
+                    assembly.extend(self.instrToAssembly(instruction))
+                    instruction = instruction.successors[0] if len(instruction.successors) > 0 else None
+                # TODO: This code was causing bytecode emission to not terminate because of how successors are defined for IF[]/ELSE[]
+                # if root is not None:
+                #     stack = []
+                #     stack.append(root)
 
-                    while len(stack) > 0:
-                        top_instr = stack[-1]
-                        assembly.extend(self.instrToAssembly(top_instr))
-                        stack.pop()
+                #     while len(stack) > 0:
+                #         top_instr = stack[-1]
+                #         assembly.extend(self.instrToAssembly(top_instr))
+                #         stack.pop()
+                #         if len(top_instr.successors) > 1:
+                #             reverse_successor = top_instr.successors[::-1]
+                #             stack.extend(reverse_successor)
+                #         else:
+                #             stack.extend(top_instr.successors)
 
-                        if len(top_instr.successors) > 1:
-                            reverse_successor = top_instr.successors[::-1]
-                            stack.extend(reverse_successor)
-                        else:
-                            stack.extend(top_instr.successors)
                 if len(assembly) > 0:
                     try:
                         ttFont[table].program.fromAssembly(assembly)

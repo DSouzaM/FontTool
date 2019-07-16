@@ -33,7 +33,7 @@ import sys
 from fontTools.ttLib.compiler import compile, ast
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.bytecodeContainer import BytecodeContainer
-from fontTools.ttLib.instructions import statements, abstractExecute, IntermediateCode
+from fontTools.ttLib.instructions import statements, abstractExecute, intermediateCode
 from fontTools.ttLib.data import dataType
 from fontTools.misc.util import makeOutputFileName
 

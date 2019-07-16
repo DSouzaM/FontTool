@@ -3,7 +3,7 @@ import sys
 import time
 import os
 import psutil
-import IntermediateCode as IR
+import intermediateCode as IR
 import copy
 import logging
 from fontTools.ttLib.compiler import ast

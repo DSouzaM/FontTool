@@ -1,8 +1,8 @@
-from instructions import statements, instructionConstructor, abstractExecute, IntermediateCode
+from instructions import statements, instructionConstructor, abstractExecute, intermediateCode
 import sys
 
 
-def fd_print(fd,string):
+def fd_print(fd, string):
     if fd:
         fd.write(string+"\n")
     else:
@@ -13,10 +13,12 @@ class BytecodeContainer(object):
     class Label(object):
         def __init__(self, n):
             self.n = n
+
         def __repr__(self):
             return "label%i" % self.n
 
     """ Represents bytecode-related global data for a TrueType font. """
+
     def __init__(self, tt):
         # tag id -> Program
         self.tag_to_programs = {}
@@ -36,7 +38,7 @@ class BytecodeContainer(object):
             for value in values:
                 self.cvt_table[key] = value
                 key = key + 1
-    
+
     def extractProgram(self, tt):
         '''
         a dictionary maps tag->Program to extract all the bytecodes
@@ -46,21 +48,23 @@ class BytecodeContainer(object):
             instructions_list = []
 
             for i in instructions:
-                instruction = instructionConstructor.instructionConstructor(i).getClass()
+                instruction = instructionConstructor.instructionConstructor(
+                    i).getClass()
                 if isinstance(instruction, instructionConstructor.Data):
                     instructions_list[-1].add_data(instruction)
-                else: 
-                    instruction.id = "%s.%d" % (program_tag, len(instructions_list))
+                else:
+                    instruction.id = "%s.%d" % (
+                        program_tag, len(instructions_list))
                     instructions_list.append(instruction)
 
-	    ## attach an ENDF statement to the end of each glyph program 
+            # attach an ENDF statement to the end of each glyph program
       # TODO: I commented this out. I don't think glyph programs are supposed to have ENDF? It was breaking the output.
-	#     if program_tag.startswith('glyf.'):
-	# 	endf_statement = statements.all.ENDF_Statement()
-	# 	endf_statement.id = "%s.%d" % (program_tag, len(instructions_list))
-	# 	instructions_list.append(endf_statement)
+        #     if program_tag.startswith('glyf.'):
+        # 	endf_statement = statements.all.ENDF_Statement()
+        # 	endf_statement.id = "%s.%d" % (program_tag, len(instructions_list))
+        # 	instructions_list.append(endf_statement)
 
-	    return instructions_list
+            return instructions_list
 
         def add_tags_with_bytecode(tt, tag):
             '''
@@ -73,10 +77,11 @@ class BytecodeContainer(object):
                         program_tag = tag+"."+key
                     else:
                         program_tag = key
-                    self.tag_to_programs[program_tag] = construct_instructions(program_tag, tt[key].program.getAssembly())
-		    
+                    self.tag_to_programs[program_tag] = construct_instructions(
+                        program_tag, tt[key].program.getAssembly())
+
                 if hasattr(tt[key], 'keys'):
-                    add_tags_with_bytecode(tt[key],tag+key)
+                    add_tags_with_bytecode(tt[key], tag+key)
 
         def extract_functions():
             '''
@@ -90,7 +95,8 @@ class BytecodeContainer(object):
                 for instruction in instructions:
                     if not in_body:
                         if isinstance(instruction, statements.all.PUSH_Statement):
-                            functionsLabels.extend(map(lambda x: x.value, instruction.data))
+                            functionsLabels.extend(
+                                map(lambda x: x.value, instruction.data))
                         if isinstance(instruction, statements.all.FDEF_Statement):
                             in_body = True
                             function_ptr = Function()
@@ -118,7 +124,7 @@ class BytecodeContainer(object):
         extract_functions()
         setup_programs()
 
-    #remove functionsToRemove from the function table
+    # remove functionsToRemove from the function table
     def removeFunctions(self, functionsToRemove=[]):
         for label in functionsToRemove:
             try:
@@ -126,8 +132,8 @@ class BytecodeContainer(object):
             except:
                 pass
 
-    # param label_mapping is a dict for each table with a list of 
-    # tuples (label, pos)  where label is the old function label 
+    # param label_mapping is a dict for each table with a list of
+    # tuples (label, pos)  where label is the old function label
     # and pos is the position of this label on the data array (of the root PUSH instruction)
     def relabelFunctions(self, label_mapping):
         relabelled_function_table = {}
@@ -143,19 +149,19 @@ class BytecodeContainer(object):
 
     def relabelTables(self, function_calls):
         for table in function_calls.keys():
-            #First instruction, contains the first PUSH with
-            #the function labels called during execution
+            # First instruction, contains the first PUSH with
+            # the function labels called during execution
             root = self.tag_to_programs[table].body.statement_root
 
             for old_label, line in function_calls[table]:
                 root.data[line-1] = self.label_mapping[old_label]
 
-    #update the TTFont object passed with contets of current BytecodeContainer
+    # update the TTFont object passed with contets of current BytecodeContainer
     def updateTTFont(self, ttFont):
         self.replaceCVTTable(ttFont)
         self.replaceFpgm(ttFont)
         self.replaceOtherTables(ttFont)
- 
+
     def replaceCVTTable(self, ttFont):
         for i in range(len(self.cvt_table)):
             ttFont['cvt '].values[i] = self.cvt_table[i]
@@ -163,7 +169,7 @@ class BytecodeContainer(object):
     def instrToAssembly(self, instr):
         assembly = []
         if (instr.mnemonic == 'PUSH' or instr.mnemonic == 'NPUSHB' or instr.mnemonic == 'NPUSHW' or
-            instr.mnemonic == 'PUSHB' or instr.mnemonic == 'PUSHW'):
+                instr.mnemonic == 'PUSHB' or instr.mnemonic == 'PUSHW'):
             assembly.append("%s [ ]" % instr.mnemonic)
             if(len(instr.data) > 1):
                 assembly[-1] += "  /* %s values pushed */" % len(instr.data)
@@ -190,7 +196,8 @@ class BytecodeContainer(object):
         if len(self.function_table) > 0:
             assembly.append("PUSH[ ]")
             if(len(self.function_table) > 1):
-                assembly[-1] += "  /* %s values pushed */" % len(self.function_table)
+                assembly[-1] += "  /* %s values pushed */" % len(
+                    self.function_table)
 
             for label in reversed(self.function_table.keys()):
                 assembly.append(str(label))
@@ -211,7 +218,8 @@ class BytecodeContainer(object):
                 instruction = root
                 while instruction:
                     assembly.extend(self.instrToAssembly(instruction))
-                    instruction = instruction.successors[0] if len(instruction.successors) > 0 else None
+                    instruction = instruction.successors[0] if len(
+                        instruction.successors) > 0 else None
                 # TODO: This code was causing bytecode emission to not terminate because of how successors are defined for IF[]/ELSE[]
                 # if root is not None:
                 #     stack = []
@@ -232,21 +240,23 @@ class BytecodeContainer(object):
                         ttFont[table].program.fromAssembly(assembly)
                     except:
                         table = table.replace("glyf.", "")
-                        ttFont['glyf'].glyphs[table].program.fromAssembly(assembly)
+                        ttFont['glyf'].glyphs[table].program.fromAssembly(
+                            assembly)
 
     def flatten_IR(self, ir_list):
         for inst in ir_list:
             yield inst
-            if isinstance(inst, IntermediateCode.IfElseBlock):
-                for i1 in self.flatten_IR(inst.if_branch): yield i1
-                for i1 in self.flatten_IR(inst.else_branch): yield i1
-    
+            if isinstance(inst, intermediateCode.IfElseBlock):
+                for i1 in self.flatten_IR(inst.if_branch):
+                    yield i1
+                for i1 in self.flatten_IR(inst.else_branch):
+                    yield i1
 
-    def print_IR(self, func_tree,fd, IR):
+    def print_IR(self, func_tree, fd, IR):
         jump_targets = {}
         counter = 0
         for inst in self.flatten_IR(IR):
-            if isinstance(inst, IntermediateCode.JROxStatement) or isinstance(inst, IntermediateCode.JmpStatement):
+            if isinstance(inst, intermediateCode.JROxStatement) or isinstance(inst, intermediateCode.JmpStatement):
                 c = self.Label(counter)
                 jump_targets[inst.inst_dest] = c
                 inst.inst_dest = c
@@ -261,30 +271,40 @@ class BytecodeContainer(object):
 
 # Function and Program are suspiciously similar; should probably be refactored.
 # per-glyph instructions
+
+
 class Program(object):
     def __init__(self, input):
-        self.body = Body(instructions = input)
+        self.body = Body(instructions=input)
+
     def pretty_print(self):
         self.body.pretty_print()
+
     def start(self):
         return self.body.statement_root
+
 
 class Function(object):
     def __init__(self, instructions=None):
         self.instructions = []
         self.execution_stream = []
+
     def pretty_print(self):
         self.body.pretty_print()
+
     def constructBody(self):
-        self.body = Body(instructions = self.instructions)
+        self.body = Body(instructions=self.instructions)
+
     def start(self):
         return self.body.statement_root
+
 
 class Body(object):
     '''
     Encapsulates a list of statements.
     '''
-    def __init__(self,*args, **kwargs):
+
+    def __init__(self, *args, **kwargs):
         self.statement_root = None
         if kwargs.get('statement_root') is not None:
             self.statement_root = kwargs.get('statement_root')
@@ -292,7 +312,7 @@ class Body(object):
             self.instructions = kwargs.get('instructions')
             if len(self.instructions) > 0:
                 self.statement_root = self.constructSuccessorAndPredecessor()
-    
+
     # CFG construction
     def constructSuccessorAndPredecessor(self):
         pending_if_stack = []
@@ -303,25 +323,25 @@ class Body(object):
             # We'll just treat them like normal statements now and fix up the
             # CFG during symbolic execution, since we need to read the dest off the stack.
 
-            #other statements should have at least 
-            #the next instruction in stream as a successor
+            # other statements should have at least
+            # the next instruction in stream as a successor
             if index < len(self.instructions)-1:
                 this_instruction.add_successor(self.instructions[index+1])
                 self.instructions[index+1].set_predecessor(this_instruction)
             # An IF statement should have two successors:
             #  one already added (index+1); one at the ELSE/ENDIF.
-            if isinstance(this_instruction,statements.all.IF_Statement):
+            if isinstance(this_instruction, statements.all.IF_Statement):
                 pending_if_stack.append(this_instruction)
-            elif isinstance(this_instruction,statements.all.ELSE_Statement):
+            elif isinstance(this_instruction, statements.all.ELSE_Statement):
                 this_if = pending_if_stack[-1]
                 this_if.add_successor(this_instruction)
                 this_instruction.set_predecessor(this_if)
-		this_instruction.IF = this_if
-            elif isinstance(this_instruction,statements.all.EIF_Statement):
+                this_instruction.IF = this_if
+            elif isinstance(this_instruction, statements.all.EIF_Statement):
                 this_if = pending_if_stack[-1]
                 this_if.add_successor(this_instruction)
                 this_instruction.set_predecessor(this_if)
-		this_instruction.IF = this_if
+                this_instruction.IF = this_if
                 pending_if_stack.pop()
         return self.instructions[0]
 
@@ -334,13 +354,13 @@ class Body(object):
         instruction_stack = []
         instruction_stack.append(instruction)
 
-        def printHelper(instruction,level):
+        def printHelper(instruction, level):
             print level*"   " + str(instruction)
 
         level = 0
-        while len(instruction_stack)>0:
+        while len(instruction_stack) > 0:
             top_instruction = instruction_stack[-1]
-            printHelper(top_instruction,level)
+            printHelper(top_instruction, level)
             if isinstance(top_instruction, statements.all.IF_Statement) or isinstance(top_instruction, statements.all.ELSE_Statement):
                 level = level + 1
             instruction_stack.pop()

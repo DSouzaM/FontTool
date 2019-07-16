@@ -38,12 +38,12 @@ class font_AST:
 
 
 class function:
-    def __init__(self):
-        # 3 types of functions, prep glyf fpgm
-        self.function_type = None
-        self.function_num = None
-        self.function_tag = None
-        self.font_ast = None
+    def __init__(self, function_type, font_ast, num=None, tag=None):
+        # 3 types of functions: "prep", "glyf", or "fpgm"
+        self.function_type = function_type
+        self.font_ast = font_ast
+        self.function_num = num
+        self.function_tag = tag
         self.expressions = []
         self.branch_stack = []
         self.arguments = []

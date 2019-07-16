@@ -14,19 +14,16 @@ class Bytecode:
     def set_code(self, code, p_type, p_tag):
         if p_type == 'prep':
             self.prep = code
-        if p_type == 'fpgm':
+        elif p_type == 'fpgm':
             self.fpgm[p_tag] = code
-        if p_type == 'glyf':
+        elif p_type == 'glyf':
             self.glyf[p_tag] = code
 
 
-class bytecode_producer:
+class BytecodeProducer:
     class variable:
-       # the left of a variable must be a trminal expression(identifier)
-       # the right of a variable could be any expression except an assignment
-
         def __init__(self, k=None, v=None):
-            self.key = k      # terminal expression(identifier type)
+            self.key = k      # terminal expression (identifier type)
             self.value = v    # any expression (except assignment exp)
             self.alias = None
 
@@ -39,18 +36,18 @@ class bytecode_producer:
             return str(self.key.value) + ":=" + str(self.value)
 
     class statement:
-        def __init__(self):
-            self.instruction = None
-            self.data = []
+        def __init__(self, instruction, *data):
+            self.instruction = instruction
+            self.data = list(data)
 
         def __str__(self):
             if self.instruction == "PUSH":
-                if int(self.data[0].value) >= 0 and int(self.data[0].value) <= 255:
+                if all([int(d.value) >= 0 and int(d.value) <= 255 for d in self.data]):
                     string = "PUSHB[ ]\n"
                 else:
                     string = "PUSHW[ ]\n"
                 for d in self.data:
-                    string = string + '      ' + str(d.value)
+                    string += '      ' + str(d.value)
 
             elif self.instruction == "SWAP":
                 string = "SWAP[ ]"
@@ -193,6 +190,7 @@ class bytecode_producer:
                         string = "other methodCall:"+self.data[0].methodName
                     else:
                         string = "other methodCall:None"
+
             elif self.instruction == "RoundState_DTG":
                 string = "RDTG[ ]"
             elif self.instruction == "RoundState_DG":
@@ -208,10 +206,8 @@ class bytecode_producer:
 
             elif self.instruction == "IF":
                 string = "IF[ ]"
-
             elif self.instruction == "ELSE":
                 string = "ELSE[ ]"
-
             elif self.instruction == "EIF":
                 string = "EIF[ ]"
 
@@ -280,7 +276,7 @@ class bytecode_producer:
         return self.code
 
     # check if this operation is a ROLL by checking current and next 3 expressions and matching pattern
-    def is_roll_operation(self, current, next1, next2, next3):
+    def is_ROLL_operation(self, current, next1, next2, next3):
         if not (isinstance(next1, ast.assignment_expression) and isinstance(next2, ast.assignment_expression) and isinstance(next3, ast.assignment_expression)):
             return False
         if not (isinstance(next1.left_oprand, ast.terminal_expression) and isinstance(next2.left_oprand, ast.terminal_expression) and isinstance(next3.left_oprand, ast.terminal_expression)):
@@ -304,16 +300,13 @@ class bytecode_producer:
         return False
 
     # check if this operation is a SWAP by checking current and next 2 expressions and matching pattern
-    def is_swap_operation(self, current, next1, next2):
+    def is_SWAP_operation(self, current, next1, next2):
         if not (isinstance(next1, ast.assignment_expression) and isinstance(next2, ast.assignment_expression)):
             return False
-
         if not (isinstance(next1.left_oprand, ast.terminal_expression) and isinstance(next2.left_oprand, ast.terminal_expression)):
             return False
-
         if not (isinstance(next1.right_oprand, ast.terminal_expression) and isinstance(next2.right_oprand, ast.terminal_expression)):
             return False
-
         if not(next1.right_oprand.type == "identifier" and next2.right_oprand.type == "identifier"):
             return False
 
@@ -369,7 +362,7 @@ class bytecode_producer:
         if (not self.variable(exp.left_oprand, None) == self.variable_stack[-1]) or (not self.variable(exp.right_oprand, None) == self.variable_stack[-2]):
             return 0
 
-        # 4. check if the second exp is 'identifier' := 'identifier'
+        # 3. check if the second exp is 'identifier' := 'identifier'
         itr = current_itr + 1
         if len(expressions) < itr + 1:
             return 0
@@ -381,7 +374,7 @@ class bytecode_producer:
         if (not next_exp.left_oprand.type == 'identifier') or (not next_exp.right_oprand.type == 'identifier'):
             return 0
 
-        # 5. check if the second exp is 'variable_stack[-2].key := variable_stack[-ind].key', get ind if it is
+        # 4. check if the second exp is 'variable_stack[-2].key := variable_stack[-ind].key', get ind if it is
         if not self.variable(next_exp.left_oprand, None) == self.variable_stack[-2]:
             return 0
         if not self.variable(next_exp.right_oprand, None) in self.variable_stack:
@@ -392,7 +385,7 @@ class bytecode_producer:
 
         if len(expressions) < itr + ind - 1 or len(self.variable_stack) < ind:
             return 0
-        # 6. for each i from ind-2 -> 1
+        # 5. for each i from ind-2 -> 1
         # check if the next exp is 'variable_stack[len(variable_stack)-i+1].key := variable_stack[len(variable_stack)-i+2].key'
         for i in range(ind-2, 1, -1):
             itr += 1
@@ -413,7 +406,7 @@ class bytecode_producer:
                 self.variable(next_exp.right_oprand, None))
             if (not ind1 == len(self.variable_stack)-i-1) or (not ind2 == len(self.variable_stack)-i):
                 return 0
-        # 7. check if the last one is 'variable_stack[-ind].key := variable_stack[-1].key'
+        # 6. check if the last one is 'variable_stack[-ind].key := variable_stack[-1].key'
         itr += 1
         next_exp = expressions[itr]
         if not isinstance(next_exp, ast.assignment_expression):
@@ -425,15 +418,15 @@ class bytecode_producer:
         if (not self.variable(next_exp.left_oprand, None) == self.variable_stack[-ind]) or (not self.variable(next_exp.right_oprand, None) == self.variable_stack[-1]):
             return 0
 
-        # 8. return the index of MINDEX if all tests pass, return 0 otherwise wheneven the test fails at some step
+        # 7. return the index of MINDEX if all tests pass, return 0 otherwise wheneven the test fails at some step
         return ind-1
 
     def generate_code(self, func_AST):
         self.function = func_AST
         self.program = []
         self.variable_stack = []
-        # push the function arguments into the variable stack(also change the variable name to local)
-        if not func_AST.arguments is None:
+        # push the function arguments into the variable stack (also change the variable name to local)
+        if func_AST.arguments:
             for i in range(0, len(func_AST.arguments)):
                 arg_name = "arg$"+str(len(func_AST.arguments)-i)
                 splits = func_AST.arguments[-i-1].split('_')
@@ -446,7 +439,7 @@ class bytecode_producer:
         expressions = func_AST.expressions
         self.process_expressions(expressions)
 
-        # output bytecode,(to screen currently)
+        # output bytecode (to screen)
         c = []
         if func_AST.function_type == "fpgm":
             c.append("PUSHB[ ]")
@@ -455,15 +448,12 @@ class bytecode_producer:
         for s in self.program:
             c.append(str(s))
         if func_AST.function_type == "fpgm":
-            stack_effect_with_out_POP = len(
-                self.variable_stack) - len(func_AST.arguments)
-            if stack_effect_with_out_POP > func_AST.stack_effect:
-                # need extra POP[ ]s at the end
-                for k in range(0, stack_effect_with_out_POP - func_AST.stack_effect):
-                    c.append("POP[ ]")
+            stack_effect_without_POP = len(self.variable_stack) - len(func_AST.arguments)
+            # need extra POP[ ]s at the end
+            for k in range(0, stack_effect_without_POP - func_AST.stack_effect):
+                c.append("POP[ ]")
             c.append("ENDF[ ]")
 
-        if func_AST.function_type == 'fpgm':
             self.code.set_code(c, func_AST.function_type,
                                func_AST.function_num)
         elif func_AST.function_type == 'prep':
@@ -472,8 +462,6 @@ class bytecode_producer:
             self.code.set_code(c, func_AST.function_type,
                                func_AST.function_tag)
 
-        del self.program
-        del self.variable_stack
         self.program = []
         self.variable_stack = []
 
@@ -483,48 +471,41 @@ class bytecode_producer:
             exp = expressions[i]
             # if this is an assignment exp
             if isinstance(exp, ast.assignment_expression):
-                # if the left oprand of this assignment exp is terminal type(identifier)
+                # the left operand is a terminal expression
                 if isinstance(exp.left_oprand, ast.terminal_expression):
                     if exp.left_oprand.type == "GS":
                         if exp.left_oprand.value.startswith("instruction_control"):
-                            s = self.statement()
-                            s.instruction = "INSTCTRL"
+                            s = self.statement("INSTCTRL")
                             self.program.append(s)
                             self.variable_stack.pop()
                             self.variable_stack.pop()
                             i += 1
                             continue
                         if exp.left_oprand.value == "scan_control":
-                            # this is an SCANCTRL operation
-                            s = self.statement()
-                            s.instruction = "SCANCTRL"
+                            s = self.statement("SCANCTRL")
                             self.program.append(s)
                             self.variable_stack.pop()
                             i += 1
                             continue
                         if exp.left_oprand.value == "scan_type":
-                            s = self.statement()
-                            s.instruction = "SCANTYPE"
+                            s = self.statement("SCANTYPE")
                             self.program.append(s)
                             self.variable_stack.pop()
                             i += 1
                             continue
                         if exp.left_oprand.value.startswith("rp"):
                             for k in range(0, exp.pops):
-                                pop_stmt = self.statement()
-                                pop_stmt.instruction = "POP"
+                                pop_stmt = self.statement("POP")
                                 self.program.append(pop_stmt)
                                 self.variable_stack.pop()
-                            s = self.statement()
-                            s.instruction = "SRP"
+                            s = self.statement("SRP")
                             self.program.append(s)
                             self.variable_stack.pop()
                             s.data.append(exp.left_oprand)
                             i += 1
                             continue
                         if exp.left_oprand.value.startswith("zp"):
-                            s = self.statement()
-                            s.instruction = "SZP"
+                            s = self.statement("SZP")
                             self.program.append(s)
                             self.variable_stack.pop()
                             s.data.append(exp.left_oprand)
@@ -534,22 +515,19 @@ class bytecode_producer:
                                 i += 1
                             continue
                         if exp.left_oprand.value == "single_width_cutin":
-                            s = self.statement()
-                            s.instruction = "SCVTCI"
+                            s = self.statement("SCVTCI")
                             self.program.append(s)
                             self.variable_stack.pop()
                             i += 1
                             continue
                         if exp.left_oprand.value == "single_width_value":
-                            s = self.statement()
-                            s.instruction = "SSW"
+                            s = self.statement("SSW")
                             self.program.append(s)
                             self.variable_stack.pop()
                             i += 1
                             continue
                         if exp.left_oprand.value == "auto_flip":
-                            s = self.statement()
-                            s.instruction = "AUTOFLIP"
+                            s = self.statement("AUTOFLIP")
                             s.data.append(exp.right_oprand)
                             self.program.append(s)
                             i += 1
@@ -558,8 +536,7 @@ class bytecode_producer:
                             if isinstance(expressions[i+1], ast.assignment_expression):
                                 if isinstance(expressions[i+1].left_oprand, ast.terminal_expression):
                                     if exp.left_oprand.value == "freedom_vector" and expressions[i+1].left_oprand.value == "projection_vector":
-                                        s = self.statement()
-                                        s.instruction = "SVTCA"
+                                        s = self.statement("SVTCA")
                                         if exp.right_oprand.value == 0:
                                             s.data.append(0)
                                         else:
@@ -567,23 +544,12 @@ class bytecode_producer:
                                         self.program.append(s)
                                         i += 2
                                         continue
-                                    '''
-			    if exp.left_oprand.value == "auto_flip":
-				s = self.statement()
-			  	s.instruction = "AUTOFLIP"
-				s.data.append(exp.right_oprand)
-				self.program.append(s)
-				i += 1
-		 		continue	
-			    '''
                         # if this fails the test above
                         if exp.left_oprand.value == "freedom_vector":
                             if isinstance(exp.right_oprand, ast.terminal_expression):
                                 if exp.right_oprand.type == "int":
                                         # this is an SFVTCA[a] operation
-                                    s = self.statement()
-                                    s.instruction = "SFVTCA"
-                                    s.data.append(exp.right_oprand)
+                                    s = self.statement("SFVTCA", exp.right_oprand)
                                     self.program.append(s)
                                     i += 1
                                     continue
@@ -592,9 +558,7 @@ class bytecode_producer:
                             if isinstance(exp.right_oprand, ast.terminal_expression):
                                 if exp.right_oprand.type == "int":
                                     # this is an SPVTCA[a] operation
-                                    s = self.statement()
-                                    s.instruction = "SPVTCA"
-                                    s.data.append(exp.right_oprand)
+                                    s = self.statement("SPVTCA", exp.right_oprand)
                                     self.program.append(s)
                                     i += 1
                                     continue
@@ -604,37 +568,25 @@ class bytecode_producer:
                         if isinstance(exp.right_oprand, ast.terminal_expression):
                             if exp.right_oprand.type == "int":
                                 # this is a simple constant assignment
-                                v = self.variable()
-                                v.key = exp.left_oprand
-                                v.value = exp.right_oprand
+                                v = self.variable(exp.left_oprand, exp.right_oprand)
                                 self.variable_stack.append(v)
-                                s = self.statement()
-                                s.instruction = "PUSH"
-                                s.data.append(exp.right_oprand)
+                                s = self.statement("PUSH", exp.right_oprand)
                                 self.program.append(s)
                                 i += 1
                                 continue
                             elif exp.right_oprand.type == "MPPEM":
                                 # this is an MPPEM operation
-                                v = self.variable()
-                                v.key = exp.left_oprand
-                                v.value = exp.right_oprand
+                                v = self.variable(exp.left_oprand, exp.right_oprand)
                                 self.variable_stack.append(v)
-                                s = self.statement()
-                                s.instruction = "MPPEM"
-                                s.data.append(exp.right_oprand)
+                                s = self.statement("MPPEM", exp.right_oprand)
                                 self.program.append(s)
                                 i += 1
                                 continue
                             elif exp.right_oprand.type == "PointSize":
                                 # this is an MPS operation
-                                v = self.variable()
-                                v.key = exp.left_oprand
-                                v.value = exp.right_oprand
+                                v = self.variable(exp.left_oprand, exp.right_oprand)
                                 self.variable_stack.append(v)
-                                s = self.statement()
-                                s.instruction = "MPS"
-                                s.data.append(exp.right_oprand)
+                                s = self.statement("MPS", exp.right_oprand)
                                 self.program.append(s)
                                 i += 1
                                 continue
@@ -647,43 +599,38 @@ class bytecode_producer:
                                     next1 = expressions[i+1]
                                     next2 = expressions[i+2]
                                     next3 = expressions[i+3]
-                                    if self.is_roll_operation(exp, next1, next2, next3):
+                                    if self.is_ROLL_operation(exp, next1, next2, next3):
                                             # this is a roll operation,roll the top 3 variables,roll the values of top 3 variables
                                         temp = self.variable_stack[-1].value
                                         exp.left_oprand.value
                                         self.variable_stack[-1].value = self.variable_stack[-3].value
                                         self.variable_stack[-3].value = self.variable_stack[-2].value
                                         self.variable_stack[-2].value = temp
-                                        s = self.statement()
-                                        s.instruction = "ROLL"
+                                        s = self.statement("ROLL")
                                         self.program.append(s)
                                         i = i + 3 + 1
                                         continue
 
-                                # 2. check if this is a swap,by checking the next 2 expressions
+                                # 2. check if this is a swap, by checking the next 2 expressions
                                 if len(expressions) > i+2 and len(self.variable_stack) > 1:
                                     next1 = expressions[i+1]
                                     next2 = expressions[i+2]
-                                    if self.is_swap_operation(exp, next1, next2):
-                                        # this is a swap operation,swap the values of top 2 variables
+                                    if self.is_SWAP_operation(exp, next1, next2):
+                                        # this is a swap operation, swap the values of top 2 variables
                                         temp = self.variable_stack[-1].value
                                         self.variable_stack[-1].value = self.variable_stack[-2].value
                                         self.variable_stack[-2].value = temp
-                                        s = self.statement()
-                                        s.instruction = "SWAP"
+                                        s = self.statement("SWAP")
                                         self.program.append(s)
                                         i = i + 3
                                         continue
 
-                                # 3. check if this is a copy,(it fails 1,but pass 2,->it's a copy)
+                                # 3. check if this is a copy (it fails 1, but pass 2, -> it's a copy)
                                 if len(self.variable_stack) > 0:
                                     if exp.right_oprand.value == self.variable_stack[-1].key.value:
-                                        s = self.statement()
-                                        s.instruction = "COPY"
+                                        s = self.statement("COPY")
                                         self.program.append(s)
-                                        v = self.variable()
-                                        v.key = exp.left_oprand
-                                        v.value = self.variable_stack[-1].value
+                                        v = self.variable(exp.left_oprand, self.variable_stack[-1].value)
                                         self.variable_stack.append(v)
                                         i += 1
                                         continue
@@ -692,9 +639,7 @@ class bytecode_producer:
                                     if isinstance(expressions[i+1], ast.assignment_expression):
                                         if isinstance(expressions[i+1].right_oprand, ast.terminal_expression):
                                             if expressions[i+1].right_oprand.type == "GS" and expressions[i+1].right_oprand.value == "freedom_vector_1":
-                                                # this is a GFV operation
-                                                s = self.statement()
-                                                s.instruction = "GFV"
+                                                s = self.statement("GFV")
                                                 s.data.append(exp)
                                                 self.program.append(s)
                                                 self.variable_stack.append(self.variable(
@@ -707,9 +652,7 @@ class bytecode_producer:
                                     if isinstance(expressions[i+1], ast.assignment_expression):
                                         if isinstance(expressions[i+1].right_oprand, ast.terminal_expression):
                                             if expressions[i+1].right_oprand.type == "GS" and expressions[i+1].right_oprand.value == "projection_vector_1":
-                                                # this is a GPV operation
-                                                s = self.statement()
-                                                s.instruction = "GPV"
+                                                s = self.statement("GPV")
                                                 s.data.append(exp)
                                                 self.program.append(s)
                                                 self.variable_stack.append(self.variable(
@@ -722,8 +665,7 @@ class bytecode_producer:
 
                         else:
                             if isinstance(exp.right_oprand, ast.roundState_expression):
-                                s = self.statement()
-                                s.instruction = exp.right_oprand.type
+                                s = self.statement(exp.right_oprand.type)
                                 self.program.append(s)
                                 if exp.right_oprand.type in ["RoundState_Super", "RoundState_45"]:
                                     self.variable_stack.pop()
@@ -731,16 +673,13 @@ class bytecode_producer:
                                 continue
                             elif isinstance(exp.right_oprand, ast.methodCall_expression):
                                 if exp.right_oprand.methodName == "GC":
-                                    s = self.statement()
-                                    s.instruction = "methodCall"
-                                    s.data.append(exp.right_oprand)
+                                    s = self.statement("methodCall", exp.right_oprand)
                                     self.program.append(s)
                                     self.variable_stack[-1].value = dataType.AbstractValue()
 
                     # this is assignment exp->left oprand is terminal(identifier)->identifier is in variable stack
                     else:
                         if self.is_MINDEX_operation(exp, expressions, i) > 0:
-                            # this is a MINDEX operation
                             skip = self.is_MINDEX_operation(
                                 exp, expressions, i)
                             self.variable_stack[-1].value = self.variable_stack[-skip-1].value
@@ -749,28 +688,22 @@ class bytecode_producer:
                                                     1].value = self.variable_stack[-k].value
                             self.variable_stack.pop()
 
-                            s = self.statement()
-                            s.instruction = "MINDEX"
+                            s = self.statement("MINDEX")
                             self.program.append(s)
                             i += skip+1
                             continue
 
                         if self.is_CINDEX_operation(exp):
-                            # this is a CINDEX operation
                             index = self.variable_stack[-1].value.value
                             self.variable_stack[-1].value = self.variable_stack[-index-1].value
-                            s = self.statement()
-                            s.instruction = "CINDEX"
+                            s = self.statement("CINDEX")
                             self.program.append(s)
                             i += 1
                             continue
                         elif isinstance(exp.right_oprand, ast.IndexedStorage_expression):
                             if len(self.variable_stack) > 0:
                                 if self.variable_stack[-1].key.value == exp.left_oprand.value:
-                                    # this is a Read indexed storage operation
-                                    s = self.statement()
-                                    s.instruction = "readIndexedStorage"
-                                    s.data.append(exp.right_oprand)
+                                    s = self.statement("readIndexedStorage", exp.right_oprand)
                                     self.program.append(s)
                                     self.variable_stack[-1].value = exp.right_oprand
                                     i += 1
@@ -778,9 +711,7 @@ class bytecode_producer:
                         elif isinstance(exp.right_oprand, ast.binary_expression):
                             self.variable_stack.pop()
                             self.variable_stack[-1].value = exp.right_oprand
-                            s = self.statement()
-                            s.instruction = "binary"
-                            s.data.append(exp.right_oprand)
+                            s = self.statement("binary", exp.right_oprand)
                             self.program.append(s)
                             i += 1
                             continue
@@ -788,17 +719,13 @@ class bytecode_producer:
                         elif isinstance(exp.right_oprand, ast.unary_expression):
                             if len(self.variable_stack) > 0:
                                 if self.variable_stack[-1].key.value == exp.left_oprand.value:
-                                    s = self.statement()
-                                    s.instruction = "unary"
-                                    s.data.append(exp.right_oprand.op)
+                                    s = self.statement("unary", exp.right_oprand.op)
                                     self.program.append(s)
                                     self.variable_stack[-1].value = exp.right_oprand
                                     i += 1
                                     continue
                         elif isinstance(exp.right_oprand, ast.methodCall_expression):
-                            s = self.statement()
-                            s.instruction = "methodCall"
-                            s.data.append(exp.right_oprand)
+                            s = self.statement("methodCall", exp.right_oprand)
                             self.variable_stack[-1].value = exp.right_oprand
                             self.program.append(s)
                             i += 1
@@ -810,295 +737,272 @@ class bytecode_producer:
                             index = len(self.variable_stack) - \
                                 self.variable_stack.index(temp_var)
                             for itr in range(0, index):
-                                s = self.statement()
-                                s.instruction = "POP"
+                                s = self.statement("POP")
                                 self.program.append(s)
                                 self.variable_stack.pop()
                             continue
 
-                # this is an assignment exp -> left oprand is not terminal_expression(identifier)
-                else:
-                    if isinstance(exp.left_oprand, ast.IndexedStorage_expression):
-                        if isinstance(exp.right_oprand, ast.terminal_expression):
-                            if (self.variable_stack) > 1:
-                                    # this is a write to storage
-                                self.variable_stack.pop()
-                                self.variable_stack.pop()
-                                s = self.statement()
-                                s.instruction = "writeToIndexedStorage"
-                                s.data.append(exp.left_oprand)
-                                self.program.append(s)
-                                i += 1
-                                continue
-            # this is not an assignment exp
-            else:
-                if isinstance(exp, ast.loop_expression):
-                    if_stmt = self.statement()
-                    if_stmt.instruction = 'IF'
-                    self.program.append(if_stmt)
-                    self.variable_stack.pop()
-                    loop_body = exp.loop_branch[0:exp.loop_size]
-                    stack_len_before_loop = len(self.variable_stack)
+                # the left operand is an indexed storage location
+                elif isinstance(exp.left_oprand, ast.IndexedStorage_expression):
+                    if isinstance(exp.right_oprand, ast.terminal_expression):
+                        if (self.variable_stack) > 1:
+                            self.variable_stack.pop()
+                            self.variable_stack.pop()
+                            s = self.statement("writeToIndexedStorage", exp.left_oprand)
+                            self.program.append(s)
+                            i += 1
+                            continue
+            
+            elif isinstance(exp, ast.loop_expression):
+                # rewrite this loop as an IF with an unconditional jump
+                if_stmt = self.statement('IF')
+                self.program.append(if_stmt)
+                self.variable_stack.pop()
+                loop_body = exp.loop_branch[0:exp.loop_size]
+                stack_len_before_loop = len(self.variable_stack)
 
-                    self.process_expressions(loop_body)
+                self.process_expressions(loop_body)
 
-                    stack_len_after_loop = len(self.variable_stack)
-                    jmpr_stmt = self.statement()
-                    jmpr_stmt.instruction = 'JMPR'
-                    eif_stmt = self.statement()
-                    eif_stmt.instruction = 'EIF'
-                    self.program.append(jmpr_stmt)
-                    self.program.append(eif_stmt)
-                    # TODO: I'm not sure if this needs to be here.
-                    self.variable_stack.pop()
+                stack_len_after_loop = len(self.variable_stack)
+                jmpr_stmt = self.statement('JMPR')
+                eif_stmt = self.statement('EIF')
+                self.program.append(jmpr_stmt)
+                self.program.append(eif_stmt)
+                # TODO: I'm not sure if this needs to be here. 
+                self.variable_stack.pop()
 
-                    for k in range(0, stack_len_after_loop-stack_len_before_loop):
-                        pop_stmt = self.statement()
-                        pop_stmt.instruction = 'POP'
-                        self.program.append(pop_stmt)
+                for k in range(0, stack_len_after_loop-stack_len_before_loop):
+                    pop_stmt = self.statement('POP')
+                    self.program.append(pop_stmt)
 
-                if isinstance(exp, ast.if_expression):
-                    # declare variable stack backup variables
-                    var_stack_after_if_branch = None
-                    var_stack_after_else_branch = None
-                    var_stack_backup = None
+            if isinstance(exp, ast.if_expression):
+                # declare variable stack backup variables
+                var_stack_after_if_branch = None
+                var_stack_after_else_branch = None
+                var_stack_backup = None
 
-                    # push if instruction, pop a variable from variable_stack
-                    if_stmt = self.statement()
-                    if_stmt.instruction = "IF"
-                    self.program.append(if_stmt)
-                    self.variable_stack.pop()
+                # push if instruction, pop a variable from variable_stack
+                if_stmt = self.statement("IF")
+                self.program.append(if_stmt)
+                self.variable_stack.pop()
 
-                    # deepcopy current variable stack to var_stack_backup
-                    var_stack_backup = copy.deepcopy(self.variable_stack)
+                # deepcopy current variable stack to var_stack_backup
+                var_stack_backup = copy.deepcopy(self.variable_stack)
 
-                    # process if branch
-                    self.process_expressions(exp.if_branch)
+                # process if branch
+                self.process_expressions(exp.if_branch)
 
-                    # deepcopy current variable stack to var_stack_after_if_branch
-                    var_stack_after_if_branch = copy.deepcopy(
+                # deepcopy current variable stack to var_stack_after_if_branch
+                var_stack_after_if_branch = copy.deepcopy(
+                    self.variable_stack)
+
+                # if else branch is not empty
+                if len(exp.else_branch) > 0:
+                    # push else statement
+                    else_stmt = self.statement("ELSE")
+                    self.program.append(else_stmt)
+                    # remember the position (index) of the else statement, in case pops are necessary
+                    else_stmt_index = len(self.program)-1
+                    # restore the variable stack and process the else branch
+                    self.variable_stack = copy.deepcopy(var_stack_backup)
+                    self.process_expressions(exp.else_branch)
+                    # deepcopy current variable stack to var_stack_after_else_branch
+                    var_stack_after_else_branch = copy.deepcopy(
                         self.variable_stack)
 
-                    # if else branch is not empty
-                    if len(exp.else_branch) > 0:
-                        # push else statement
-                        else_stmt = self.statement()
-                        else_stmt.instruction = "ELSE"
+                    # configure pop instructions at the end of if/else branches
+                    #  if else branch has more variables, need pops at the end of else branch
+                    if len(var_stack_after_else_branch) > len(var_stack_after_if_branch):
+                        num_to_pop = len(
+                            var_stack_after_else_branch) - len(var_stack_after_if_branch)
+                        for k in range(0, num_to_pop):
+                            # append pop statment at the end of program and pop a variable from else_branch
+                            pop_stmt = self.statement("POP")
+                            self.program.append(pop_stmt)
+                            var_stack_after_else_branch.pop()
+
+                    #  if if branch has more variables, need pops at the end of if branch
+                    elif len(var_stack_after_if_branch) > len(var_stack_after_else_branch):
+                        num_to_pop = len(
+                            var_stack_after_if_branch) - len(var_stack_after_else_branch)
+                        pos = else_stmt_index
+                        for k in range(0, num_to_pop):
+                            # insert pop statement to the index of else statement
+                            pop_stmt = self.statement("POP")
+                            self.program.insert(pos, pop_stmt)
+                            pos += 1
+                            # pop a variable from if branch
+                            var_stack_after_if_branch.pop()
+
+                    # append eif statement
+                    eif_stmt = self.statement("EIF")
+                    self.program.append(eif_stmt)
+                    # set current variable stack to var_stack_after_else_branch (or var_stack_after_if_branch)
+                    self.variable_stack = var_stack_after_else_branch
+
+                # if else branch is empty, var stack after "else branch" is backup var stack
+                else:
+                    # if the if branch reduced the variable stack size, need else branch with pops
+                    if len(var_stack_backup) > len(var_stack_after_if_branch):
+                        num_to_pop = len(var_stack_backup) - \
+                            len(var_stack_after_if_branch)
+                        # append else statement
+                        else_stmt = self.statement("ELSE")
                         self.program.append(else_stmt)
-                        # get the position(index) of else statement
-                        else_stmt_index = len(self.program)-1
-                        # restore the variable stack and process the else branch
-                        self.variable_stack = copy.deepcopy(var_stack_backup)
-                        self.process_expressions(exp.else_branch)
-                        # deepcopy current variable stack to var_stack_after_else_branch
-                        var_stack_after_else_branch = copy.deepcopy(
-                            self.variable_stack)
+                        for k in range(0, num_to_pop):
+                            # append pop statement, and pop a variable from var_stack_backup
+                            pop_stmt = self.statement("POP")
+                            self.program.append(pop_stmt)
+                            var_stack_backup.pop()
 
-                        # configure pop instructions at the end of if/else branches
-                        #  if else branch has more variables, need pops at the end of else branch
-                        if len(var_stack_after_else_branch) > len(var_stack_after_if_branch):
-                            num_to_pop = len(
-                                var_stack_after_else_branch) - len(var_stack_after_if_branch)
-                            for k in range(0, num_to_pop):
-                                # append pop statment at the end of program and pop a variable from else_branch
-                                pop_stmt = self.statement()
-                                pop_stmt.instruction = "POP"
-                                self.program.append(pop_stmt)
-                                var_stack_after_else_branch.pop()
+                    # if the if branch increased the variable stack size, need pops at the end of the if branch
+                    elif len(var_stack_after_if_branch) > len(var_stack_backup):
+                        num_to_pop = len(
+                            var_stack_after_if_branch) - len(var_stack_backup)
+                        for k in range(0, num_to_pop):
+                            # append pop to the end and pop a variable from var_stack_after_if_branch
+                            pop_stmt = self.statement("POP")
+                            self.program.append(pop_stmt)
+                            var_stack_after_if_branch.pop()
 
-                        #  if if branch has more variables, need pops at the end of if branch
-                        elif len(var_stack_after_if_branch) > len(var_stack_after_else_branch):
-                            num_to_pop = len(
-                                var_stack_after_if_branch) - len(var_stack_after_else_branch)
-                            pos = else_stmt_index
-                            for k in range(0, num_to_pop):
-                                # insert pop statement to the index of else statement
-                                pop_stmt = self.statement()
-                                pop_stmt.instruction = "POP"
-                                self.program.insert(pos, pop_stmt)
-                                pos += 1
-                                # pop a variable from if branch
-                                var_stack_after_if_branch.pop()
+                    # append eif statement
+                    eif_stmt = self.statement("EIF")
+                    self.program.append(eif_stmt)
+                    # set the current variable stack to var_stack_backup (or var_stack_after_if_branch)
+                    self.variable_stack = var_stack_backup
 
-                        # append eif statement
-                        eif_stmt = self.statement()
-                        eif_stmt.instruction = "EIF"
-                        self.program.append(eif_stmt)
-                        # set current variable stack to var_stack_after_else_branch (or var_stack_after_if_branch)
-                        self.variable_stack = var_stack_after_else_branch
+                # increment program pointer and continue
+                i += 1
+                continue
 
-                    # if else branch is empty, var stack after "else branch" is backup var stack
-                    else:
-                        # if the if branch reduced the variable stack size, need else branch with pops
-                        if len(var_stack_backup) > len(var_stack_after_if_branch):
-                            num_to_pop = len(var_stack_backup) - \
-                                len(var_stack_after_if_branch)
-                            # append else statement
-                            else_stmt = self.statement()
-                            else_stmt.instruction = "ELSE"
-                            self.program.append(else_stmt)
-                            for k in range(0, num_to_pop):
-                                # append pop statement, and pop a variable from var_stack_backup
-                                pop_stmt = self.statement()
-                                pop_stmt.instruction = "POP"
-                                self.program.append(pop_stmt)
-                                var_stack_backup.pop()
+            elif isinstance(exp, ast.methodCall_expression):
+                s = self.statement("methodCall", exp)
+                self.program.append(s)
+                if exp.methodName == "MSIRP":
+                    self.variable_stack.pop()
+                    self.variable_stack.pop()
 
-                        # if the if branch increased the variable stakc size, need pops at the end of the if branch
-                        elif len(var_stack_after_if_branch) > len(var_stack_backup):
-                            num_to_pop = len(
-                                var_stack_after_if_branch) - len(var_stack_backup)
-                            for k in range(0, num_to_pop):
-                                # append pop to the end and pop a variable from var_stack_after_if_branch
-                                pop_stmt = self.statement()
-                                pop_stmt.instruction = "POP"
-                                self.program.append(pop_stmt)
-                                var_stack_after_if_branch.pop()
-
-                        # append eif statement
-                        eif_stmt = self.statement()
-                        eif_stmt.instruction = "EIF"
-                        self.program.append(eif_stmt)
-                        # set the current variable stack to var_stack_backup (or var_stack_after_if_branch)
-                        self.variable_stack = var_stack_backup
-
-                    # increment program pointer and continue
-                    i += 1
-                    continue
-
-                elif isinstance(exp, ast.methodCall_expression):
-                    s = self.statement()
-                    s.instruction = "methodCall"
-                    s.data.append(exp)
-                    self.program.append(s)
-                    if exp.methodName == "MSIRP":
-                        self.variable_stack.pop()
+                elif exp.methodName == "ALIGNRP":
+                    for k in range(0, exp.data):
                         self.variable_stack.pop()
 
-                    elif exp.methodName == "ALIGNRP":
-                        for k in range(0, exp.data):
+                elif exp.methodName == "CALL" or exp.methodName == "LOOPCALL":
+                    # pop callee var
+                    self.variable_stack.pop()
+                    if exp.methodName == "LOOPCALL":
+                        self.variable_stack.pop()
+                    # configure stack effect
+                    repeats = 1
+                    if exp.methodName == "LOOPCALL":
+                        repeats = exp.repeats
+                    if exp.stack_effect < 0:
+                        for k in range(0, -exp.stack_effect*repeats):
                             self.variable_stack.pop()
-
-                    elif exp.methodName == "CALL" or exp.methodName == "LOOPCALL":
-                        # pop callee var
-                        self.variable_stack.pop()
-                        if exp.methodName == "LOOPCALL":
-                            self.variable_stack.pop()
-                        # configure stack effect
-                        repeats = 1
-                        if exp.methodName == "LOOPCALL":
-                            repeats = exp.repeats
-                        if exp.stack_effect < 0:
-                            for k in range(0, -exp.stack_effect*repeats):
-                                self.variable_stack.pop()
-                        elif exp.stack_effect > 0:
-                            tag = '$'
-                            if len(self.variable_stack) == 0:
-                                if not self.function.function_type == 'fpgm':
-                                    if self.function.function_tag == None:
-                                        tag = tag+'prep_'
-                                    else:
-                                        tag = tag+self.function.function_tag+'_'
-
+                    elif exp.stack_effect > 0:
+                        tag = '$'
+                        if len(self.variable_stack) == 0:
+                            if not self.function.function_type == 'fpgm':
+                                if self.function.function_tag == None:
+                                    tag = tag+'prep_'
                                 else:
-                                    tag += 'fpgm_'
+                                    tag = tag+self.function.function_tag+'_'
+
                             else:
-                                tag = self.variable_stack[-1].key.value.split('_')[
-                                    0]
+                                tag += 'fpgm_'
+                        else:
+                            tag = self.variable_stack[-1].key.value.split('_')[
+                                0]
 
-                                if self.function.function_type == "fpgm":
-                                    tag = tag + '_' + \
-                                        str(self.function.function_num) + '_'
-                                else:
-                                    tag = tag + '_'
+                            if self.function.function_type == "fpgm":
+                                tag = tag + '_' + \
+                                    str(self.function.function_num) + '_'
+                            else:
+                                tag = tag + '_'
 
-                            for k in range(0, exp.stack_effect*repeats):
-                                var_key_str = tag + \
-                                    str(len(self.variable_stack)+1)
-                                var_val_str = '$arg_' + str(k+1)
-                                var = self.variable(ast.terminal_expression(
-                                    "identifier", var_key_str), ast.terminal_expression("identifier", var_val_str))
-                                self.variable_stack.append(var)
+                        for k in range(0, exp.stack_effect*repeats):
+                            var_key_str = tag + \
+                                str(len(self.variable_stack)+1)
+                            var_val_str = '$arg_' + str(k+1)
+                            var = self.variable(ast.terminal_expression(
+                                "identifier", var_key_str), ast.terminal_expression("identifier", var_val_str))
+                            self.variable_stack.append(var)
 
-                    elif exp.methodName == "AA":
+                elif exp.methodName == "AA":
+                    self.variable_stack.pop()
+                elif exp.methodName == "ALIGNPTS":
+                    self.variable_stack.pop()
+                    self.variable_stack.pop()
+                elif exp.methodName == "DELTA":
+                    self.variable_stack.pop()
+                    for k in range(0, len(exp.args)):
                         self.variable_stack.pop()
-                    elif exp.methodName == "ALIGNPTS":
+                elif exp.methodName == "IP":
+                    for k in range(0, len(exp.args)):
                         self.variable_stack.pop()
+                elif exp.methodName == "MD":
+                    self.variable_stack.pop()
+                    self.variable_stack[-1].value = dataType.Distance()
+                elif exp.methodName == "MDAP":
+                    self.variable_stack.pop()
+                elif exp.methodName == "MDRP":
+                    self.variable_stack.pop()
+                elif exp.methodName == "MIAP":
+                    self.variable_stack.pop()
+                    self.variable_stack.pop()
+                elif exp.methodName == "MIRP":
+                    self.variable_stack.pop()
+                    self.variable_stack.pop()
+                elif exp.methodName == "MSIRP":
+                    self.variable_stack.pop()
+                    self.variable_stack.pop()
+                elif exp.methodName == "SCFS":
+                    self.variable_stack.pop()
+                    self.variable_stack.pop()
+                elif exp.methodName == "SDB":
+                    self.variable_stack.pop()
+                elif exp.methodName == "SDPVTL":
+                    self.variable_stack.pop()
+                    self.variable_stack.pop()
+                elif exp.methodName == "SDS":
+                    self.variable_stack.pop()
+                elif exp.methodName == "SFVFS":
+                    self.variable_stack.pop()
+                    self.variable_stack.pop()
+                elif exp.methodName == "SPVFS":
+                    self.variable_stack.pop()
+                    self.variable_stack.pop()
+                elif exp.methodName == "SFVTL":
+                    self.variable_stack.pop()
+                    self.variable_stack.pop()
+                elif exp.methodName == "SPVTL":
+                    self.variable_stack.pop()
+                    self.variable_stack.pop()
+                elif exp.methodName == "SHC":
+                    self.variable_stack.pop()
+                elif exp.methodName == "SHP":
+                    for k in range(0, len(exp.args)):
                         self.variable_stack.pop()
-                    elif exp.methodName == "DELTA":
+                elif exp.methodName == "SHPIX":
+                    for k in range(0, exp.pops):
+                        pop_stmt = self.statement("POP")
+                        self.program.insert(len(self.program)-1, pop_stmt)
                         self.variable_stack.pop()
-                        for k in range(0, len(exp.args)):
-                            self.variable_stack.pop()
-                    elif exp.methodName == "IP":
-                        for k in range(0, len(exp.args)):
-                            self.variable_stack.pop()
-                    elif exp.methodName == "MD":
+                    self.variable_stack.pop()
+                    self.variable_stack.pop()
+                elif exp.methodName == "SHZ":
+                    self.variable_stack.pop()
+                elif exp.methodName == "SLOOP":
+                    self.variable_stack.pop()
+                elif exp.methodName == "SMD":
+                    self.variable_stack.pop()
+                elif exp.methodName == "FLIPRGON" or exp.methodName == "FLIPRGOFF":
+                    self.variable_stack.pop()
+                    self.variable_stack.pop()
+                elif exp.methodName == "ISECT":
+                    for k in range(0, 5):
                         self.variable_stack.pop()
-                        self.variable_stack[-1].value = dataType.Distance()
-                    elif exp.methodName == "MDAP":
-                        self.variable_stack.pop()
-                    elif exp.methodName == "MDRP":
-                        self.variable_stack.pop()
-                    elif exp.methodName == "MIAP":
-                        self.variable_stack.pop()
-                        self.variable_stack.pop()
-                    elif exp.methodName == "MIRP":
-                        self.variable_stack.pop()
-                        self.variable_stack.pop()
-                    elif exp.methodName == "MSIRP":
-                        self.variable_stack.pop()
-                        self.variable_stack.pop()
-                    elif exp.methodName == "SCFS":
-                        self.variable_stack.pop()
-                        self.variable_stack.pop()
-                    elif exp.methodName == "SDB":
-                        self.variable_stack.pop()
-                    elif exp.methodName == "SDPVTL":
-                        self.variable_stack.pop()
-                        self.variable_stack.pop()
-                    elif exp.methodName == "SDS":
-                        self.variable_stack.pop()
-                    elif exp.methodName == "SFVFS":
-                        self.variable_stack.pop()
-                        self.variable_stack.pop()
-                    elif exp.methodName == "SPVFS":
-                        self.variable_stack.pop()
-                        self.variable_stack.pop()
-                    elif exp.methodName == "SFVTL":
-                        self.variable_stack.pop()
-                        self.variable_stack.pop()
-                    elif exp.methodName == "SPVTL":
-                        self.variable_stack.pop()
-                        self.variable_stack.pop()
-                    elif exp.methodName == "SHC":
-                        self.variable_stack.pop()
-                    elif exp.methodName == "SHP":
-                        for k in range(0, len(exp.args)):
-                            self.variable_stack.pop()
-                    elif exp.methodName == "SHPIX":
-                        for k in range(0, exp.pops):
-                            pop_stmt = self.statement()
-                            pop_stmt.instruction = "POP"
-                            self.program.insert(len(self.program)-1, pop_stmt)
-                            self.variable_stack.pop()
-                        self.variable_stack.pop()
-                        self.variable_stack.pop()
-                    elif exp.methodName == "SHZ":
-                        self.variable_stack.pop()
-                    elif exp.methodName == "SLOOP":
-                        self.variable_stack.pop()
-                    elif exp.methodName == "SMD":
-                        self.variable_stack.pop()
-                    elif exp.methodName == "FLIPRGON" or exp.methodName == "FLIPRGOFF":
-                        self.variable_stack.pop()
-                        self.variable_stack.pop()
-                    elif exp.methodName == "ISECT":
-                        for k in range(0, 5):
-                            self.variable_stack.pop()
 
-                    i += 1
-                    continue
-
+                i += 1
+                continue
+            # TODO should we throw if we reach here? code did not match any of the above cases.
             i += 1
-            #index = self.variable_stack.index(self.variable(k=exp.left_oprand))
-            #offset = len(self.variable_stack) - index

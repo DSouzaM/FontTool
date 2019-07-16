@@ -2184,11 +2184,9 @@ class Executor(object):
 
         # when first time executing a fpgm, set current function tree to this and append the expressions in this function to this func_tree
         if first_time_called:
-            new_func_tree = ast.function()
-            new_func_tree.type = "fpgm"
-            new_func_tree.num = callee
+            new_func_tree = ast.function("fpgm", None, num=callee)
             self.current_func_tree = new_func_tree
-        # if this is not the first time in this fpgm, set current_func_tree to None,so no expression will be appended
+        # if this is not the first time in this fpgm, set current_func_tree to None, so no expression will be appended
         else:
             self.current_func_tree = None
 

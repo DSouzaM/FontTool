@@ -21,25 +21,19 @@ usage: pyftanalysis [options] inputfile
 """
 from __future__ import print_function, division, absolute_import
 import time
-import psutil
 import tempfile
 import copy
 import logging
-import pdb
-import math
 import getopt
 import os
 import sys
+from fontTools import version
 from fontTools.ttLib.compiler import compile, ast
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.bytecodeContainer import BytecodeContainer
 from fontTools.ttLib.instructions import statements, abstractExecute, intermediateCode
 from fontTools.ttLib.data import dataType
 from fontTools.misc.util import makeOutputFileName
-
-
-CURSOR_UP = '\x1b[1A'
-ERASE = '\x1b[2K'
 
 
 def ttDump(input):
@@ -56,13 +50,9 @@ def ttDump(input):
 
 
 def executeGlyphs(abstractExecutor, initialEnvironment, glyphs):
-    process = psutil.Process(os.getpid())
     called_functions = set()
     i = 0
     for glyph in glyphs:
-        #i += 1
-        # if  i>50:
-        #   continue
         abstractExecutor.glyph_num += 1
         abstractExecutor.environment = copy.deepcopy(initialEnvironment)
         abstractExecutor.execute(glyph)
@@ -77,18 +67,12 @@ def analysis(bytecodeContainer, glyphs, font_name):
     abstractExecutor.current_font_name = font_name
     abstractExecutor.start_time = time.time()
     called_functions = set()
-    # for key in bytecodeContainer.function_table.keys():
-    #	if len(bytecodeContainer.function_table[key].body.instructions)>0:
-    #	    print (bytecodeContainer.function_table[key].body.instructions[0].id,key)
-    #	    print (bytecodeContainer.function_table[key].body.instructions,'\n')
-    # sys.exit()
 
     if 'prep' in bytecodeContainer.tag_to_programs:
-        #print('executing prep...\n')
         abstractExecutor.execute('prep')
         called_functions.update(list(set(abstractExecutor.visited_functions)))
-    # NB: if there's no prep we don't explicitly output the initial graphics state
 
+    # NB: if there's no prep we don't explicitly output the initial graphics state
     environment_after_prep = abstractExecutor.environment
     called_functions.update(executeGlyphs(
         abstractExecutor, environment_after_prep, glyphs))
@@ -114,7 +98,6 @@ class Options(object):
         for option, value in rawOptions:
             # general options
             if option == "-h":
-                from fontTools import version
                 print(__doc__ % version)
                 sys.exit(0)
             elif option == "-i":
@@ -151,7 +134,6 @@ class Options(object):
 
 
 def usage():
-    from fontTools import version
     print(__doc__ % version)
     sys.exit(2)
 
@@ -204,9 +186,7 @@ def process(jobs, options):
             if (options.outputIR):
                 if 'prep' in bc.tag_to_programs:
                     # create function tree for compiler
-                    prep_ast = ast.function()
-                    prep_ast.font_ast = font_ast
-                    prep_ast.function_type = "prep"
+                    prep_ast = ast.function("prep", font_ast)
                     font_ast.prep_function = prep_ast
                     bc.print_IR(prep_ast, output_fd, bc.IRs['prep'])
                 else:
@@ -222,16 +202,13 @@ def process(jobs, options):
                     tag = "fpgm_%s" % key
                     if tag in bc.IRs:
                         # create function tree for compiler
-                        fpgm_ast = ast.function()
-                        fpgm_ast.font_ast = font_ast
-                        fpgm_ast.function_type = "fpgm"
-                        fpgm_ast.function_num = key
+                        fpgm_ast = ast.function("fpgm", font_ast, num=key)
                         font_ast.program_functions.append(fpgm_ast)
                         bc.print_IR(fpgm_ast, output_fd, bc.IRs[tag])
                     else:
                         fd_print(output_fd, "  <not executed, no IR>")
                 else:
-                    value.body.pretty_print()     #
+                    value.body.pretty_print()
 
                 fd_print(output_fd, "")
 
@@ -242,10 +219,7 @@ def process(jobs, options):
                 fd_print(output_fd, "%s:" % glyph)
                 if (options.outputIR):
                     # create function tree for compiler
-                    glyf_ast = ast.function()
-                    glyf_ast.font_ast = font_ast
-                    glyf_ast.function_type = "glyf"
-                    glyf_ast.function_tag = glyph
+                    glyf_ast = ast.function("glyf", font_ast, tag=glyph)
                     font_ast.glyph_functions.append(glyf_ast)
                     bc.print_IR(glyf_ast, output_fd, bc.IRs[glyph])
                 else:
@@ -287,8 +261,7 @@ def process(jobs, options):
         if not output_fd is None:
             output_fd.close()
 
-        c = compile.compiler()
-        c.compile(font_ast)
+        compile.Compiler().compile(font_ast)
 
 
 def parseOptions(args):

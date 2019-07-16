@@ -1,14 +1,13 @@
 import statements
+import sys
 import time
 import os
 import psutil
 import IntermediateCode as IR
 import copy
 import logging
-import AST
+from fontTools.ttLib.compiler import ast
 from fontTools.ttLib.data import dataType
-import sys
-sys.path.append('/Users/matt/school/FontTool/Lib/compiler')
 
 CURSOR_UP = '\x1b[1A'
 ERASE = '\x1b[2K'
@@ -2185,7 +2184,7 @@ class Executor(object):
 
         # when first time executing a fpgm, set current function tree to this and append the expressions in this function to this func_tree
         if first_time_called:
-            new_func_tree = AST.function()
+            new_func_tree = ast.function()
             new_func_tree.type = "fpgm"
             new_func_tree.num = callee
             self.current_func_tree = new_func_tree

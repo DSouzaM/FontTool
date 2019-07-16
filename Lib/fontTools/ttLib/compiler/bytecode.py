@@ -1,5 +1,5 @@
 import sys
-import AST
+import ast
 import token
 import copy
 from fontTools.ttLib.data import dataType
@@ -281,11 +281,11 @@ class bytecode_producer:
 
     # check if this operation is a ROLL by checking current and next 3 expressions and matching pattern
     def is_roll_operation(self, current, next1, next2, next3):
-        if not (isinstance(next1, AST.assignment_expression) and isinstance(next2, AST.assignment_expression) and isinstance(next3, AST.assignment_expression)):
+        if not (isinstance(next1, ast.assignment_expression) and isinstance(next2, ast.assignment_expression) and isinstance(next3, ast.assignment_expression)):
             return False
-        if not (isinstance(next1.left_oprand, AST.terminal_expression) and isinstance(next2.left_oprand, AST.terminal_expression) and isinstance(next3.left_oprand, AST.terminal_expression)):
+        if not (isinstance(next1.left_oprand, ast.terminal_expression) and isinstance(next2.left_oprand, ast.terminal_expression) and isinstance(next3.left_oprand, ast.terminal_expression)):
             return False
-        if not (isinstance(next1.right_oprand, AST.terminal_expression) and isinstance(next2.right_oprand, AST.terminal_expression) and isinstance(next3.right_oprand, AST.terminal_expression)):
+        if not (isinstance(next1.right_oprand, ast.terminal_expression) and isinstance(next2.right_oprand, ast.terminal_expression) and isinstance(next3.right_oprand, ast.terminal_expression)):
             return False
         if not (next1.right_oprand.type == "identifier" and next2.right_oprand.type == "identifier" and next3.right_oprand.type == "identifier"):
             return False
@@ -305,13 +305,13 @@ class bytecode_producer:
 
     # check if this operation is a SWAP by checking current and next 2 expressions and matching pattern
     def is_swap_operation(self, current, next1, next2):
-        if not (isinstance(next1, AST.assignment_expression) and isinstance(next2, AST.assignment_expression)):
+        if not (isinstance(next1, ast.assignment_expression) and isinstance(next2, ast.assignment_expression)):
             return False
 
-        if not (isinstance(next1.left_oprand, AST.terminal_expression) and isinstance(next2.left_oprand, AST.terminal_expression)):
+        if not (isinstance(next1.left_oprand, ast.terminal_expression) and isinstance(next2.left_oprand, ast.terminal_expression)):
             return False
 
-        if not (isinstance(next1.right_oprand, AST.terminal_expression) and isinstance(next2.right_oprand, AST.terminal_expression)):
+        if not (isinstance(next1.right_oprand, ast.terminal_expression) and isinstance(next2.right_oprand, ast.terminal_expression)):
             return False
 
         if not(next1.right_oprand.type == "identifier" and next2.right_oprand.type == "identifier"):
@@ -332,7 +332,7 @@ class bytecode_producer:
     def is_CINDEX_operation(self, exp):
         if len(self.variable_stack) < 1:
             return False
-        if not isinstance(self.variable_stack[-1].value, AST.terminal_expression):
+        if not isinstance(self.variable_stack[-1].value, ast.terminal_expression):
             return False
         if not self.variable_stack[-1].value.type == "int":
             return False
@@ -344,7 +344,7 @@ class bytecode_producer:
         if not exp.left_oprand.value == self.variable_stack[-1].key.value:
             return False
 
-        if not isinstance(exp.right_oprand, AST.terminal_expression):
+        if not isinstance(exp.right_oprand, ast.terminal_expression):
             return False
 
         if not exp.right_oprand.type == "identifier":
@@ -358,7 +358,7 @@ class bytecode_producer:
     def is_MINDEX_operation(self, exp, expressions, current_itr):
         # this is done by testing step by step, it is not a MINDEX if anyone step of test fails
         # 1. check if the first exp is 'identifier' := 'identifier'
-        if not isinstance(exp.right_oprand, AST.terminal_expression):
+        if not isinstance(exp.right_oprand, ast.terminal_expression):
             return 0
         if not exp.right_oprand.type == 'identifier':
             return 0
@@ -374,9 +374,9 @@ class bytecode_producer:
         if len(expressions) < itr + 1:
             return 0
         next_exp = expressions[itr]
-        if not isinstance(next_exp, AST.assignment_expression):
+        if not isinstance(next_exp, ast.assignment_expression):
             return 0
-        if (not isinstance(next_exp.left_oprand, AST.terminal_expression)) or (not isinstance(next_exp.right_oprand, AST.terminal_expression)):
+        if (not isinstance(next_exp.left_oprand, ast.terminal_expression)) or (not isinstance(next_exp.right_oprand, ast.terminal_expression)):
             return 0
         if (not next_exp.left_oprand.type == 'identifier') or (not next_exp.right_oprand.type == 'identifier'):
             return 0
@@ -397,9 +397,9 @@ class bytecode_producer:
         for i in range(ind-2, 1, -1):
             itr += 1
             next_exp = expressions[itr]
-            if not isinstance(next_exp, AST.assignment_expression):
+            if not isinstance(next_exp, ast.assignment_expression):
                 return 0
-            if (not isinstance(next_exp.left_oprand, AST.terminal_expression)) or (not isinstance(next_exp.right_oprand, AST.terminal_expression)):
+            if (not isinstance(next_exp.left_oprand, ast.terminal_expression)) or (not isinstance(next_exp.right_oprand, ast.terminal_expression)):
                 return 0
             if (not next_exp.left_oprand.type == 'identifier') or (not next_exp.right_oprand.type == 'identifier'):
                 return 0
@@ -416,9 +416,9 @@ class bytecode_producer:
         # 7. check if the last one is 'variable_stack[-ind].key := variable_stack[-1].key'
         itr += 1
         next_exp = expressions[itr]
-        if not isinstance(next_exp, AST.assignment_expression):
+        if not isinstance(next_exp, ast.assignment_expression):
             return 0
-        if (not isinstance(next_exp.left_oprand, AST.terminal_expression)) or (not isinstance(next_exp.right_oprand, AST.terminal_expression)):
+        if (not isinstance(next_exp.left_oprand, ast.terminal_expression)) or (not isinstance(next_exp.right_oprand, ast.terminal_expression)):
             return 0
         if (not next_exp.left_oprand.type == 'identifier') or (not next_exp.right_oprand.type == 'identifier'):
             return 0
@@ -438,8 +438,8 @@ class bytecode_producer:
                 arg_name = "arg$"+str(len(func_AST.arguments)-i)
                 splits = func_AST.arguments[-i-1].split('_')
                 var_name = "$fpgm_"+str(func_AST.function_num)+"_"+splits[-1]
-                next_arg_var = self.variable(AST.terminal_expression(
-                    "identifier", var_name), AST.terminal_expression("identifier", arg_name))
+                next_arg_var = self.variable(ast.terminal_expression(
+                    "identifier", var_name), ast.terminal_expression("identifier", arg_name))
                 next_arg_var.alias = arg_name
                 self.variable_stack.append(next_arg_var)
 
@@ -482,9 +482,9 @@ class bytecode_producer:
         while i < len(expressions):
             exp = expressions[i]
             # if this is an assignment exp
-            if isinstance(exp, AST.assignment_expression):
+            if isinstance(exp, ast.assignment_expression):
                 # if the left oprand of this assignment exp is terminal type(identifier)
-                if isinstance(exp.left_oprand, AST.terminal_expression):
+                if isinstance(exp.left_oprand, ast.terminal_expression):
                     if exp.left_oprand.type == "GS":
                         if exp.left_oprand.value.startswith("instruction_control"):
                             s = self.statement()
@@ -555,8 +555,8 @@ class bytecode_producer:
                             i += 1
                             continue
                         if i+1 < len(expressions):
-                            if isinstance(expressions[i+1], AST.assignment_expression):
-                                if isinstance(expressions[i+1].left_oprand, AST.terminal_expression):
+                            if isinstance(expressions[i+1], ast.assignment_expression):
+                                if isinstance(expressions[i+1].left_oprand, ast.terminal_expression):
                                     if exp.left_oprand.value == "freedom_vector" and expressions[i+1].left_oprand.value == "projection_vector":
                                         s = self.statement()
                                         s.instruction = "SVTCA"
@@ -578,7 +578,7 @@ class bytecode_producer:
 			    '''
                         # if this fails the test above
                         if exp.left_oprand.value == "freedom_vector":
-                            if isinstance(exp.right_oprand, AST.terminal_expression):
+                            if isinstance(exp.right_oprand, ast.terminal_expression):
                                 if exp.right_oprand.type == "int":
                                         # this is an SFVTCA[a] operation
                                     s = self.statement()
@@ -589,7 +589,7 @@ class bytecode_producer:
                                     continue
 
                         if exp.left_oprand.value == "projection_vector":
-                            if isinstance(exp.right_oprand, AST.terminal_expression):
+                            if isinstance(exp.right_oprand, ast.terminal_expression):
                                 if exp.right_oprand.type == "int":
                                     # this is an SPVTCA[a] operation
                                     s = self.statement()
@@ -601,7 +601,7 @@ class bytecode_producer:
 
                     # if this variable is not in variable stack
                     if not self.variable(k=exp.left_oprand) in self.variable_stack:
-                        if isinstance(exp.right_oprand, AST.terminal_expression):
+                        if isinstance(exp.right_oprand, ast.terminal_expression):
                             if exp.right_oprand.type == "int":
                                 # this is a simple constant assignment
                                 v = self.variable()
@@ -689,8 +689,8 @@ class bytecode_producer:
                                         continue
                             elif exp.right_oprand.type == "GS":
                                 if exp.right_oprand.value == "freedom_vector_0":
-                                    if isinstance(expressions[i+1], AST.assignment_expression):
-                                        if isinstance(expressions[i+1].right_oprand, AST.terminal_expression):
+                                    if isinstance(expressions[i+1], ast.assignment_expression):
+                                        if isinstance(expressions[i+1].right_oprand, ast.terminal_expression):
                                             if expressions[i+1].right_oprand.type == "GS" and expressions[i+1].right_oprand.value == "freedom_vector_1":
                                                 # this is a GFV operation
                                                 s = self.statement()
@@ -704,8 +704,8 @@ class bytecode_producer:
                                                 i += 2
                                                 continue
                                 elif exp.right_oprand.value == "projection_vector_0":
-                                    if isinstance(expressions[i+1], AST.assignment_expression):
-                                        if isinstance(expressions[i+1].right_oprand, AST.terminal_expression):
+                                    if isinstance(expressions[i+1], ast.assignment_expression):
+                                        if isinstance(expressions[i+1].right_oprand, ast.terminal_expression):
                                             if expressions[i+1].right_oprand.type == "GS" and expressions[i+1].right_oprand.value == "projection_vector_1":
                                                 # this is a GPV operation
                                                 s = self.statement()
@@ -721,7 +721,7 @@ class bytecode_producer:
                                                 continue
 
                         else:
-                            if isinstance(exp.right_oprand, AST.roundState_expression):
+                            if isinstance(exp.right_oprand, ast.roundState_expression):
                                 s = self.statement()
                                 s.instruction = exp.right_oprand.type
                                 self.program.append(s)
@@ -729,7 +729,7 @@ class bytecode_producer:
                                     self.variable_stack.pop()
                                 i += 1
                                 continue
-                            elif isinstance(exp.right_oprand, AST.methodCall_expression):
+                            elif isinstance(exp.right_oprand, ast.methodCall_expression):
                                 if exp.right_oprand.methodName == "GC":
                                     s = self.statement()
                                     s.instruction = "methodCall"
@@ -764,7 +764,7 @@ class bytecode_producer:
                             self.program.append(s)
                             i += 1
                             continue
-                        elif isinstance(exp.right_oprand, AST.IndexedStorage_expression):
+                        elif isinstance(exp.right_oprand, ast.IndexedStorage_expression):
                             if len(self.variable_stack) > 0:
                                 if self.variable_stack[-1].key.value == exp.left_oprand.value:
                                     # this is a Read indexed storage operation
@@ -775,7 +775,7 @@ class bytecode_producer:
                                     self.variable_stack[-1].value = exp.right_oprand
                                     i += 1
                                     continue
-                        elif isinstance(exp.right_oprand, AST.binary_expression):
+                        elif isinstance(exp.right_oprand, ast.binary_expression):
                             self.variable_stack.pop()
                             self.variable_stack[-1].value = exp.right_oprand
                             s = self.statement()
@@ -785,7 +785,7 @@ class bytecode_producer:
                             i += 1
                             continue
 
-                        elif isinstance(exp.right_oprand, AST.unary_expression):
+                        elif isinstance(exp.right_oprand, ast.unary_expression):
                             if len(self.variable_stack) > 0:
                                 if self.variable_stack[-1].key.value == exp.left_oprand.value:
                                     s = self.statement()
@@ -795,7 +795,7 @@ class bytecode_producer:
                                     self.variable_stack[-1].value = exp.right_oprand
                                     i += 1
                                     continue
-                        elif isinstance(exp.right_oprand, AST.methodCall_expression):
+                        elif isinstance(exp.right_oprand, ast.methodCall_expression):
                             s = self.statement()
                             s.instruction = "methodCall"
                             s.data.append(exp.right_oprand)
@@ -818,8 +818,8 @@ class bytecode_producer:
 
                 # this is an assignment exp -> left oprand is not terminal_expression(identifier)
                 else:
-                    if isinstance(exp.left_oprand, AST.IndexedStorage_expression):
-                        if isinstance(exp.right_oprand, AST.terminal_expression):
+                    if isinstance(exp.left_oprand, ast.IndexedStorage_expression):
+                        if isinstance(exp.right_oprand, ast.terminal_expression):
                             if (self.variable_stack) > 1:
                                     # this is a write to storage
                                 self.variable_stack.pop()
@@ -832,7 +832,7 @@ class bytecode_producer:
                                 continue
             # this is not an assignment exp
             else:
-                if isinstance(exp, AST.loop_expression):
+                if isinstance(exp, ast.loop_expression):
                     if_stmt = self.statement()
                     if_stmt.instruction = 'IF'
                     self.program.append(if_stmt)
@@ -857,7 +857,7 @@ class bytecode_producer:
                         pop_stmt.instruction = 'POP'
                         self.program.append(pop_stmt)
 
-                if isinstance(exp, AST.if_expression):
+                if isinstance(exp, ast.if_expression):
                     # declare variable stack backup variables
                     var_stack_after_if_branch = None
                     var_stack_after_else_branch = None
@@ -966,7 +966,7 @@ class bytecode_producer:
                     i += 1
                     continue
 
-                elif isinstance(exp, AST.methodCall_expression):
+                elif isinstance(exp, ast.methodCall_expression):
                     s = self.statement()
                     s.instruction = "methodCall"
                     s.data.append(exp)
@@ -1016,8 +1016,8 @@ class bytecode_producer:
                                 var_key_str = tag + \
                                     str(len(self.variable_stack)+1)
                                 var_val_str = '$arg_' + str(k+1)
-                                var = self.variable(AST.terminal_expression(
-                                    "identifier", var_key_str), AST.terminal_expression("identifier", var_val_str))
+                                var = self.variable(ast.terminal_expression(
+                                    "identifier", var_key_str), ast.terminal_expression("identifier", var_val_str))
                                 self.variable_stack.append(var)
 
                     elif exp.methodName == "AA":

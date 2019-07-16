@@ -1,9 +1,8 @@
-import AST
+import sys
+from fontTools.ttLib.compiler import ast
 from fontTools.ttLib.data import dataType
 import math
 import copy
-import sys
-sys.path.append('/Users/matt/school/FontTool/Lib/compiler')
 
 
 class Boolean(object):
@@ -382,32 +381,32 @@ class MethodCallStatement(object):
     def push_expression(self, func_tree):
         # func call statement comes first
         if isinstance(self, CallStatement):
-            exp = AST.call_expression(
+            exp = ast.call_expression(
                 self.callee, self.stack_effect, self.call_arg_list)
             if isinstance(self.callee, list):
-                exp = AST.call_expression(
+                exp = ast.call_expression(
                     self.callee[0], self.stack_effect, self.call_arg_list)
             func_tree.push_expression(exp)
             return
         if isinstance(self, LoopCallStatement):
-            exp = AST.loopcall_expression(
+            exp = ast.loopcall_expression(
                 self.callee, self.repeats, self.stack_effect, self.call_arg_list)
             if isinstance(self.callee, list):
-                exp = AST.loopcall_expression(
+                exp = ast.loopcall_expression(
                     self.callee, self.repeats, self.stack_effect, self.call_arg_list)
             func_tree.push_expression(exp)
             return
 
         if self.returnVal is not None:
-            exp = AST.assignment_expression()
+            exp = ast.assignment_expression()
             if isinstance(self.returnVal, Variable):
-                exp.left_oprand = AST.terminal_expression(
+                exp.left_oprand = ast.terminal_expression(
                     "identifier", self.returnVal.identifier)
             else:
-                exp.left_oprand = AST.terminal_expression(
+                exp.left_oprand = ast.terminal_expression(
                     "identifier", self.returnVal)
 
-            exp.right_oprand = AST.methodCall_expression()
+            exp.right_oprand = ast.methodCall_expression()
             if isinstance(self, GCMethodCall):
                 exp.right_oprand.methodName = "GC"
                 exp.right_oprand.data = self.data
@@ -418,86 +417,85 @@ class MethodCallStatement(object):
             func_tree.push_expression(exp)
         else:
             if isinstance(self, MSIRPMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "MSIRP", self.data.value, self.parameters)
             elif isinstance(self, FLIPRGMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     self.methodName, self.arg, self.parameters)
             elif isinstance(self, AAMethodCall):
-                exp = AST.methodCall_expression("AA", None, self.parameters)
+                exp = ast.methodCall_expression("AA", None, self.parameters)
             elif isinstance(self, ALIGNRPMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "ALIGNRP", self.loop_value, None)
             elif isinstance(self, DELTAMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "DELTA", self.op, self.parameters)
             elif isinstance(self, IPMethodCall):
-                exp = AST.methodCall_expression("IP", None, self.parameters)
+                exp = ast.methodCall_expression("IP", None, self.parameters)
             elif isinstance(self, IUPMethodCall):
-                exp = AST.methodCall_expression("IUP", self.data.value, None)
+                exp = ast.methodCall_expression("IUP", self.data.value, None)
             elif isinstance(self, MDMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "MD", self.data.value, self.parameters)
             elif isinstance(self, MDAPMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "MDAP", self.data.value, self.parameters)
             elif isinstance(self, MDRPMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "MDRP", self.data.value, self.parameters)
             elif isinstance(self, MIAPMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "MIAP", self.data.value, self.parameters)
             elif isinstance(self, MIRPMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "MIRP", self.data.value, self.parameters)
             elif isinstance(self, MSIRPMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "MSIRP", self.data.value, self.parameters)
             elif isinstance(self, ROFFMethodCall):
-                exp = AST.methodCall_expression("ROFF", None, None)
+                exp = ast.methodCall_expression("ROFF", None, None)
             elif isinstance(self, ISECTMethodCall):
-                exp = AST.methodCall_expression("ISECT", None, self.parameters)
+                exp = ast.methodCall_expression("ISECT", None, self.parameters)
             elif isinstance(self, SCFSMethodCall):
-                exp = AST.methodCall_expression("SCFS", None, self.parameters)
+                exp = ast.methodCall_expression("SCFS", None, self.parameters)
             elif isinstance(self, SPVTLMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "SPVTL", self.data.value, self.parameters)
             elif isinstance(self, SFVTPVMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "SFVTPV", None, self.parameters)
             elif isinstance(self, SPVFSMethodCall):
-                exp = AST.methodCall_expression("SPVFS", None, self.parameters)
+                exp = ast.methodCall_expression("SPVFS", None, self.parameters)
             elif isinstance(self, SDBMethodCall):
-                exp = AST.methodCall_expression("SDB", None, self.parameters)
+                exp = ast.methodCall_expression("SDB", None, self.parameters)
             elif isinstance(self, SDPVTLMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "SDPVTL", self.data.value, self.parameters)
             elif isinstance(self, SDSMethodCall):
-                exp = AST.methodCall_expression("SDS", None, self.parameters)
+                exp = ast.methodCall_expression("SDS", None, self.parameters)
             elif isinstance(self, SFVFSMethodCall):
-                exp = AST.methodCall_expression("SFVFS", None, self.parameters)
+                exp = ast.methodCall_expression("SFVFS", None, self.parameters)
             elif isinstance(self, SFVTLMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "SFVTL", self.data.value, self.parameters)
             elif isinstance(self, SHCMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "SHC", self.data.value, self.parameters)
             elif isinstance(self, SHPMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "SHP", self.data.value, self.parameters)
             elif isinstance(self, SHPIXMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "SHPIX", None, self.parameters, pops=self.pops)
             elif isinstance(self, SHZMethodCall):
-                exp = AST.methodCall_expression(
+                exp = ast.methodCall_expression(
                     "SHZ", self.data.value, self.parameters)
             elif isinstance(self, SLOOPMethodCall):
-                exp = AST.methodCall_expression("SLOOP", None, self.parameters)
+                exp = ast.methodCall_expression("SLOOP", None, self.parameters)
             elif isinstance(self, SMDMethodCall):
-                exp = AST.methodCall_expression("SMD", None, self.parameters)
-
+                exp = ast.methodCall_expression("SMD", None, self.parameters)
             else:
-                exp = AST.expression()
+                exp = ast.expression()
             func_tree.push_expression(exp)
 
 
@@ -842,114 +840,114 @@ class AssignmentStatement(dataType.AbstractValue):
         return "%s %s %s" % (self.left, self.operator, str(self.right))
 
     def push_expression(self, func_tree):
-        exp = AST.assignment_expression()
+        exp = ast.assignment_expression()
         exp.pops = self.pops
         # configure left oprand
         if isinstance(self.left, GraphicsStateVariable):
-            exp.left_oprand = AST.terminal_expression(
+            exp.left_oprand = ast.terminal_expression(
                 "GS", self.left.identifier[3:len(self.left.identifier)-1])
 
         elif isinstance(self.left, str):
             if self.left.startswith("GS"):
                 if self.left.endswith(".all"):
-                    exp.left_oprand = AST.terminal_expression(
+                    exp.left_oprand = ast.terminal_expression(
                         "GS", self.left[3:len(self.left)-1-4])
                     exp.left_oprand.is_all = True
                 else:
-                    exp.left_oprand = AST.terminal_expression(
+                    exp.left_oprand = ast.terminal_expression(
                         "GS", self.left[3:len(self.left)-1])
             else:
-                exp.left_oprand = AST.terminal_expression(
+                exp.left_oprand = ast.terminal_expression(
                     "identifier", self.left)
         else:
-            exp.left_oprand = AST.terminal_expression(
+            exp.left_oprand = ast.terminal_expression(
                 "identifier", self.left.identifier)
 
         # configure right oprand
         if isinstance(self.right, Constant):
-            exp.right_oprand = AST.terminal_expression("int", self.right.value)
+            exp.right_oprand = ast.terminal_expression("int", self.right.value)
 
         elif isinstance(self.right, int):
-            exp.right_oprand = AST.terminal_expression("int", self.right)
+            exp.right_oprand = ast.terminal_expression("int", self.right)
 
         elif isinstance(self.right, BinaryExpression):
-            exp.right_oprand = AST.binary_expression()
+            exp.right_oprand = ast.binary_expression()
             #exp.right_oprand.op = str(self.operator)
-            exp.right_oprand.oprand1 = AST.terminal_expression(
+            exp.right_oprand.oprand1 = ast.terminal_expression(
                 "identifier", self.right.left)
-            exp.right_oprand.oprand2 = AST.terminal_expression(
+            exp.right_oprand.oprand2 = ast.terminal_expression(
                 "identifier", self.right.right)
             exp.right_oprand.op = str(self.right.operator)
 
         elif isinstance(self.right, UnaryExpression):
             pass
-            exp.right_oprand = AST.unary_expression()
+            exp.right_oprand = ast.unary_expression()
             exp.right_oprand.op = str(self.right.operator)
             exp.right_oprand.oprand = self.right.arg
 
         elif isinstance(self.right, Variable):
 
             if isinstance(self.right, GraphicsStateVariable):
-                exp.right_oprand = AST.terminal_expression()
+                exp.right_oprand = ast.terminal_expression()
                 exp.right_oprand.type = "GS"
                 exp.right_oprand.value = self.right.identifier[3:len(
                     self.right.identifier)-1]
             else:
-                exp.right_oprand = AST.terminal_expression()
+                exp.right_oprand = ast.terminal_expression()
                 exp.right_oprand.type = "identifier"
                 exp.right_oprand.value = self.right.identifier
 
         elif isinstance(self.right, Boolean):
-            exp.right_oprand = AST.terminal_expression(
+            exp.right_oprand = ast.terminal_expression(
                 "bool", self.right.value)
 
         elif isinstance(self.right, dataType.RoundState_DTG):
-            exp.right_oprand = AST.roundState_expression("RoundState_DTG")
+            exp.right_oprand = ast.roundState_expression("RoundState_DTG")
         elif isinstance(self.right, dataType.RoundState_DG):
-            exp.right_oprand = AST.roundState_expression("RoundState_DG")
+            exp.right_oprand = ast.roundState_expression("RoundState_DG")
         elif isinstance(self.right, dataType.RoundState_G):
-            exp.right_oprand = AST.roundState_expression("RoundState_G")
+            exp.right_oprand = ast.roundState_expression("RoundState_G")
         elif isinstance(self.right, dataType.RoundState_HG):
-            exp.right_oprand = AST.roundState_expression("RoundState_HG")
+            exp.right_oprand = ast.roundState_expression("RoundState_HG")
         elif isinstance(self.right, dataType.RoundState_UG):
-            exp.right_oprand = AST.roundState_expression("RoundState_UG")
+            exp.right_oprand = ast.roundState_expression("RoundState_UG")
 
         elif isinstance(self.right, dataType.RoundState_Super):
-            exp.right_oprand = AST.roundState_expression("RoundState_Super")
+            exp.right_oprand = ast.roundState_expression("RoundState_Super")
 
         elif isinstance(self.right, dataType.RoundState_Super45):
-            exp.right_oprand = AST.roundState_expression("RoundState_Super45")
+            exp.right_oprand = ast.roundState_expression("RoundState_Super45")
 
         elif isinstance(self.right, ReadFromIndexedStorage):
-            exp.right_oprand = AST.IndexedStorage_expression()
+            exp.right_oprand = ast.IndexedStorage_expression()
             exp.right_oprand.storage = self.right.storage
             if isinstance(self.right.index, int):
                 exp.right_oprand.index_type = "int"
-                ind = AST.terminal_expression("int", self.right.index)
+                ind = ast.terminal_expression("int", self.right.index)
                 exp.right_oprand.index = ind
 
             elif isinstance(self.right.index, Variable):
                 exp.right_oprand.index_type = "identifier"
-                ind = AST.terminal_expression(
+                ind = ast.terminal_expression(
                     "identifier", self.right.index.identifier)
                 exp.right_oprand.index = ind
             else:
                 exp.right_oprand.index_type = "other type"
 
         elif isinstance(self.right, dataType.PPEM_X):
-            exp.right_oprand = AST.terminal_expression()
+            exp.right_oprand = ast.terminal_expression()
             exp.right_oprand.type = "MPPEM"
             exp.right_oprand.value = "X"
 
         elif isinstance(self.right, dataType.PPEM_Y):
-            exp.right_oprand = AST.terminal_expression()
+            exp.right_oprand = ast.terminal_expression()
             exp.right_oprand.type = "MPPEM"
             exp.right_oprand.value = "Y"
         elif isinstance(self.right, dataType.PointSize):
-            exp.right_oprand = AST.terminal_expression()
+            exp.right_oprand = ast.terminal_expression()
             exp.right_oprand.type = "PointSize"
         elif isinstance(self.right, MethodCallStatement):
-            exp.right_oprand = AST.methodCall_expression()
+            exp.right_oprand = ast.methodCall_expression()
             exp.right_oprand.methodName = self.right.methodName
             exp.right_oprand.parameters = self.right.parameters
         else:
@@ -1013,13 +1011,13 @@ class IndexedAssignment(AssignmentStatement):
         return "%s[%s] := %s" % (self.storage, self.index, self.var)
 
     def push_expression(self, func_tree):
-        exp = AST.assignment_expression()
-        exp.left_oprand = AST.IndexedStorage_expression()
+        exp = ast.assignment_expression()
+        exp.left_oprand = ast.IndexedStorage_expression()
         exp.left_oprand.unit = self.unit
         exp.left_oprand.storage = self.storage
         exp.left_oprand.index = self.index.identifier
         exp.left_oprand.index_type = "identifier"
-        exp.right_oprand = AST.terminal_expression(
+        exp.right_oprand = ast.terminal_expression(
             "identifier", self.var.identifier)
         func_tree.push_expression(exp)
 
@@ -1062,7 +1060,7 @@ class ReturnStatement(object):
         return "RET"
 
     def push_expression(self, func_tree):
-        exp = AST.expression()
+        exp = ast.expression()
         func_tree.push_expression(exp)
 
 
@@ -1094,7 +1092,7 @@ class JROxStatement(object):
 
 class LoopBlock(object):
     def push_expression(self, func_tree):
-        exp = AST.loop_expression()
+        exp = ast.loop_expression()
         exp.loop_size = self.loop_size
         func_tree.push_expression(exp)
         func_tree.branch_stack.append(exp)
@@ -1146,7 +1144,7 @@ class LoopBlock(object):
 class IfElseBlock(object):
 
     def push_expression(self, func_tree):
-        exp = AST.if_expression()
+        exp = ast.if_expression()
         func_tree.push_expression(exp)
         func_tree.branch_stack.append(exp)
         exp.reverse = self.reverse

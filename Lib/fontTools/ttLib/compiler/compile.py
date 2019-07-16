@@ -2,7 +2,7 @@ import sys
 import os
 import xml.etree.ElementTree as XML
 import token
-import AST
+import ast
 import bytecode
 
 CURSOR_UP = '\x1b[1A'

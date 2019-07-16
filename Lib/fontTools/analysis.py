@@ -29,15 +29,13 @@ import pdb
 import math
 import getopt
 import os
-import compile
-import AST
+import sys
+from fontTools.ttLib.compiler import compile, ast
 from fontTools.ttLib import TTFont
 from fontTools.ttLib.bytecodeContainer import BytecodeContainer
 from fontTools.ttLib.instructions import statements, abstractExecute, IntermediateCode
 from fontTools.ttLib.data import dataType
 from fontTools.misc.util import makeOutputFileName
-import sys
-sys.path.append('/Users/matt/school/FontTool/Lib/compiler')
 
 
 CURSOR_UP = '\x1b[1A'
@@ -57,7 +55,7 @@ def ttDump(input):
     return output
 
 
-def executeGlyphs(abstractExecutor, initialEnvironment, glyphs, ast):
+def executeGlyphs(abstractExecutor, initialEnvironment, glyphs):
     process = psutil.Process(os.getpid())
     called_functions = set()
     i = 0
@@ -74,7 +72,6 @@ def executeGlyphs(abstractExecutor, initialEnvironment, glyphs, ast):
 
 
 def analysis(bytecodeContainer, glyphs, font_name):
-    ast = AST.font_AST()
     abstractExecutor = abstractExecute.Executor(bytecodeContainer)
     abstractExecutor.all_glyphs = len(glyphs)
     abstractExecutor.current_font_name = font_name
@@ -94,7 +91,7 @@ def analysis(bytecodeContainer, glyphs, font_name):
 
     environment_after_prep = abstractExecutor.environment
     called_functions.update(executeGlyphs(
-        abstractExecutor, environment_after_prep, glyphs, ast))
+        abstractExecutor, environment_after_prep, glyphs))
     return abstractExecutor, called_functions
 
 
@@ -168,15 +165,15 @@ def fd_print(fd, string):
 
 def process(jobs, options):
     for (input, origin, output) in jobs:
-        ast = AST.font_AST()
-        ast.font_name = input
+        font_ast = ast.font_AST()
+        font_ast.font_name = input
         if not output is None:
             temp = output.split('/')
             # get output dir with output .coi filename
             output_dir = ""
             for k in range(0, len(temp)-1):
                 output_dir = output_dir + temp[k] + '/'
-            ast.output_dir = output_dir
+            font_ast.output_dir = output_dir
 
         tt = TTFont()
         tt.importXML(input, quiet=None)
@@ -195,7 +192,7 @@ def process(jobs, options):
             first_time_call_args = ae.first_time_call_args
             first_time_stack_effect = ae.first_time_stack_effect
             for k in first_time_call_args.keys():
-                ast.add_fpgm_args(
+                font_ast.add_fpgm_args(
                     k, first_time_call_args[k], first_time_stack_effect[k])
 
         output_fd = None
@@ -207,10 +204,10 @@ def process(jobs, options):
             if (options.outputIR):
                 if 'prep' in bc.tag_to_programs:
                     # create function tree for compiler
-                    prep_ast = AST.function()
-                    prep_ast.font_ast = ast
+                    prep_ast = ast.function()
+                    prep_ast.font_ast = font_ast
                     prep_ast.function_type = "prep"
-                    ast.prep_function = prep_ast
+                    font_ast.prep_function = prep_ast
                     bc.print_IR(prep_ast, output_fd, bc.IRs['prep'])
                 else:
                     fd_print(output_fd, "  <no prep>")
@@ -225,11 +222,11 @@ def process(jobs, options):
                     tag = "fpgm_%s" % key
                     if tag in bc.IRs:
                         # create function tree for compiler
-                        fpgm_ast = AST.function()
-                        fpgm_ast.font_ast = ast
+                        fpgm_ast = ast.function()
+                        fpgm_ast.font_ast = font_ast
                         fpgm_ast.function_type = "fpgm"
                         fpgm_ast.function_num = key
-                        ast.program_functions.append(fpgm_ast)
+                        font_ast.program_functions.append(fpgm_ast)
                         bc.print_IR(fpgm_ast, output_fd, bc.IRs[tag])
                     else:
                         fd_print(output_fd, "  <not executed, no IR>")
@@ -245,11 +242,11 @@ def process(jobs, options):
                 fd_print(output_fd, "%s:" % glyph)
                 if (options.outputIR):
                     # create function tree for compiler
-                    glyf_ast = AST.function()
-                    glyf_ast.font_ast = ast
+                    glyf_ast = ast.function()
+                    glyf_ast.font_ast = font_ast
                     glyf_ast.function_type = "glyf"
                     glyf_ast.function_tag = glyph
-                    ast.glyph_functions.append(glyf_ast)
+                    font_ast.glyph_functions.append(glyf_ast)
                     bc.print_IR(glyf_ast, output_fd, bc.IRs[glyph])
                 else:
                     bc.tag_to_programs[glyph].body.pretty_print()
@@ -291,8 +288,7 @@ def process(jobs, options):
             output_fd.close()
 
         c = compile.compiler()
-        c.compile(ast)
-        # inverse conversion
+        c.compile(font_ast)
 
 
 def parseOptions(args):

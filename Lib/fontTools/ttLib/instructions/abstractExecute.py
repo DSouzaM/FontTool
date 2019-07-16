@@ -95,11 +95,8 @@ class Environment(object):
         '''
         merge environment2 into this one; used at control-flow (e.g. if-else, jrox) merge.
         '''
-        # if len(environment2.program_stack)!=len(self.program_stack):
-        #print ("impending assertion failure; here's the mismatched environments")
-        # environment2.pretty_print()
-        # self.pretty_print()
-        assert len(environment2.program_stack) == len(self.program_stack)
+        assert len(environment2.program_stack) == len(
+            self.program_stack), "attempted to merge environments with different stack sizes"
 
         new_stack = []
         for (v1, v2) in zip(self.program_stack, environment2.program_stack):
@@ -137,7 +134,7 @@ class Environment(object):
                     self.graphics_state[gs_key].possibleValues))
 
     def pretty_print(self, fd):
-        if not fd is None:
+        if fd:
             fd.write(self.__repr__()+"\n")
         else:
             print self.__repr__()
@@ -178,7 +175,7 @@ class Environment(object):
         return len(self.program_stack)
 
     def program_stack_push(self, data=None, assign=True, customVar=None):
-        if customVar is not None:
+        if customVar:
             tempVariable = customVar
         else:
             tempVariableName = self.stack_top_name(1)
@@ -256,8 +253,8 @@ class Environment(object):
             res = op1 + op2
             expression = e(op1, op2, IR.ADDOperator())
         elif action is 'SUB':
-
             res = op1 - op2
+            # TODO: is this needed? seems unnecessary.
             if isinstance(op1_val.data, int) and isinstance(op2_val.data, int):
                 res = op1_val.eval(False) - op2_val.eval(False)
             expression = e(op1, op2, IR.SUBOperator())
@@ -535,7 +532,6 @@ class Environment(object):
             IR.CopyStatement(pv0, IR.ProjectionVectorByComponent(0)))
         self.current_instruction_intermediate.append(
             IR.CopyStatement(pv1, IR.ProjectionVectorByComponent(1)))
-        #logger.info("     program_stack is %s" % (str(map(lambda s:s.eval(False), self.program_stack))))
 
     def exec_GFV(self):
         self.program_stack_changes.extend(["push", "push"])
@@ -555,7 +551,6 @@ class Environment(object):
         self.binary_operation('GTEQ')
 
     def exec_IDEF(self):
-        # self.program_stack_pop()
         raise NotImplementedError
 
     def exec_INSTCTRL(self):
@@ -590,19 +585,22 @@ class Environment(object):
     def fetch_body_for_tag(self, tag):
         fpgm_prefix = "fpgm_"
         if tag.startswith(fpgm_prefix):
-            fn = int(tag[len(fpgm_prefix):len(tag)])
+            fn = int(tag[len(fpgm_prefix):])
             return self.bytecodeContainer.function_table[fn].body
         else:
             return self.bytecodeContainer.tag_to_programs[self.tag].body
 
     def evaluate_operations(self, arg):
+        """
+        Helper function to simplify arg. Returns a pair indicating whether
+        arg is explicit and the value produced.
+        """
         if isinstance(arg, IR.UnaryExpression):
             if arg.operator == 'NEG':
                 return (True, -arg.arg)
         return (False, None)
 
     def adjust_succ_for_relative_jump(self, current_instruction, arg, if_else_stack, ignored_insts, function_instructions_list, bytecode2ir, executor):
-        #print 'enter adjust succ'
         # find the instructions and set the PC
         # returns (True, _) if we broke a cycle
         # also returns the jump successor
@@ -643,9 +641,9 @@ class Environment(object):
         # i+2  ELSE[ ]
         # i+3  POP[ ]
         # i+4  EIF[ ]
-        # Consequently, if this JMPR was originally a JROT/JROF, adjust the offset accordingly
+        # Consequently, if this JMPR was originally a JROT/JROF, adjust the offset accordingly.
         if current_instruction.is_from_conditional_jump:
-            mag += 3 if arg > 0 else 1
+            mag += 3 if dir == 1 else 1
 
         def instruction_size(instruction):
             size = 1
@@ -682,6 +680,7 @@ class Environment(object):
                 if crossing_instruction.mnemonic in ["IF", "ELSE", "EIF"]:
                     flow_control_insts_cross_list.append(crossing_instruction)
         assert mag == 0, "Failed to translate relative jump"
+
         target = ins[pc]
         current_instruction.target = target
         # TODO: I think this case is only an infinite loop if the branch is backward. If it's forward, there's no loop.
@@ -691,10 +690,10 @@ class Environment(object):
                 print '    ', skip_list[-i].id, ' : ', skip_list[-i]
             print '}'
             sys.exit('infinite loop detected, quit!')
-        # only interested in the jump which crosses the flow control instructions
-        if len(flow_control_insts_cross_list) > 0:
 
-            # figure out if in a if/else block, block type and which branch currently in
+        # only interested in jumps which cross control flow instructions
+        if len(flow_control_insts_cross_list) > 0:
+            # figure out whether we're in an if/else block, and if so, the block type & current branch
             in_block = False
             block_type = 'THEN'
             in_branch = 'THEN'
@@ -706,38 +705,27 @@ class Environment(object):
                     block_type = 'ELSE'
                 if current_block.IR.mode == 'ELSE':
                     in_branch = 'ELSE'
-            # go through each flow control instruction crossed
 
+            # go through each flow control instruction crossed
             # if jump backwards
             if dir == -1:
                 # remove the blocks in all layers which the jump instruction crosses all the way over
                 list_stack = []
-                for i in range(0, len(flow_control_insts_cross_list)):
-                    list_stack.append(flow_control_insts_cross_list[i])
+                for instruction in flow_control_insts_cross_list:
+                    list_stack.append(instruction)
                     while len(list_stack) > 1:
                         if list_stack[-1].mnemonic == 'IF' and list_stack[-2].mnemonic == 'EIF':
                             list_stack.pop()
                             list_stack.pop()
+                        elif len(list_stack) > 2 and list_stack[-1].mnemonic == 'IF' and list_stack[-2].mnemonic == 'ELSE' and list_stack[-3].mnemonic == 'EIF':
+                            list_stack.pop()
+                            list_stack.pop()
+                            list_stack.pop()
                         else:
-
-                            if len(list_stack) > 2:
-                                if list_stack[-1].mnemonic == 'IF' and list_stack[-2].mnemonic == 'ELSE' and list_stack[-3].mnemonic == 'EIF':
-                                    list_stack.pop()
-                                    list_stack.pop()
-                                    list_stack.pop()
-                                else:
-                                    break
-                            else:
-                                break
+                            break
 
                 flow_control_insts_cross_list = list_stack
-                num_of_layers_crossed = 0
-                # count layers jump out
-
-                for i in range(0, len(flow_control_insts_cross_list)):
-                    flow_control_inst = flow_control_insts_cross_list[-(i+1)]
-                    if flow_control_inst.mnemonic == 'IF':
-                        num_of_layers_crossed += 1
+                num_of_layers_crossed = len([inst for inst in flow_control_insts_cross_list if inst.mnemonic == 'IF'])
 
                 # the max layers a jump instruction can cross is the number of layer of itself
                 if num_of_layers_crossed > len(if_else_stack)+1:
@@ -957,10 +945,9 @@ class Environment(object):
                         print '}'
                         sys.exit('infinite loop detected, quit!')
 
-            # if jumps forward
-            if dir == 1:
-                # remove all pairs of (IF,EIF,(ELSE)) the jump insturction crossed as when dir == -1
-                num_of_layers_crossed = 0
+            # if jump forwards
+            elif dir == 1:
+                # remove all pairs of (IF,EIF,(ELSE)) the jump instruction crossed as when dir == -1
                 list_stack = []
                 for i in range(0, len(flow_control_insts_cross_list)):
                     list_stack.append(flow_control_insts_cross_list[i])
@@ -968,20 +955,14 @@ class Environment(object):
                         if list_stack[-1].mnemonic == 'EIF' and list_stack[-2].mnemonic == 'IF':
                             list_stack.pop()
                             list_stack.pop()
+                        elif len(list_stack) > 2 and list_stack[-1].mnemonic == 'EIF' and list_stack[-2].mnemonic == 'ELSE' and list_stack[-3].mnemonic == 'IF':
+                            list_stack.pop()
+                            list_stack.pop()
+                            list_stack.pop()
                         else:
-                            if len(list_stack) > 2:
-                                if list_stack[-1].mnemonic == 'EIF' and list_stack[-2].mnemonic == 'ELSE' and list_stack[-3].mnemonic == 'IF':
-                                    list_stack.pop()
-                                    list_stack.pop()
-                                    list_stack.pop()
-                                else:
-                                    break
-                            else:
-                                break
+                            break
                 flow_control_insts_cross_list = list_stack
-                for i in flow_control_insts_cross_list:
-                    if i.mnemonic == 'EIF':
-                        num_of_layers_crossed += 1
+                num_of_layers_crossed = len([inst for inst in flow_control_insts_cross_list if inst.mnemonic == 'EIF'])
 
                 if num_of_layers_crossed == 0:
                     if in_block:
@@ -1825,10 +1806,9 @@ class Executor(object):
         sys.stdout.write('-'*(font_name_len+time_len +
                               memory_len+percentage_len+tag_len+6)+'\n')
         if self.current_tag == 'prep':
-            print '**************** working on prep ...'
+            sys.stdout.write('**************** working on prep ...\n')
         else:
-            print '**************** working on glyph: ', str(
-                self.glyph_num), '/', str(self.all_glyphs)
+            sys.stdout.write('**************** working on glyph: %d/%d\n' % (self.glyph_num, self.all_glyphs))
         self.row_to_erase = 6
 
     class Uncertain_Callee_Backup(object):
@@ -2070,7 +2050,6 @@ class Executor(object):
     def execute_CALL(self, repeats=1, is_loopcall=False):
         # actually we *always* want to get the concrete callee
         callee = self.environment.program_stack[-1].eval(False)
-        print 'calling func ', callee
         if not is_loopcall and (not self.current_instruction.id in self.bytecode2ir.keys()):
             self.setIRForBytecode(self.current_instruction, [
                                   IR.CallStatement(callee)])
@@ -2909,7 +2888,7 @@ class Executor(object):
                 if len(self.call_stack) > 0:
                     while True:
                         self.execute_RETURN(tag)
-                        if len(self.call_stack) == 0 or self.current_instruction is not None:
+                        if len(self.call_stack) == 0 or self.current_instruction:
                             break
                 # ok, we really are all done here!
                 else:

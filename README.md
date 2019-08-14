@@ -66,18 +66,18 @@ By running `python setup.py develop` during setup, changes take effect immediate
 
 There are a few locations you'll find most of the code contributed by this project:
 
-- [Lib/fontTools/analysis.py](../Lib/fontTools/analysis.py): entry-point to the utility
+- [Lib/fontTools/analysis.py](Lib/fontTools/analysis.py): entry-point to the utility
 
-- [Lib/fontTools/ttLib/compiler](../Lib/fontTools/ttLib/compiler), [Lib/fontTools/ttLib/instructions](../Lib/fontTools/ttLib/instructions): modules implementing most of the analysis logic
+- [Lib/fontTools/ttLib/compiler](Lib/fontTools/ttLib/compiler), [Lib/fontTools/ttLib/instructions](Lib/fontTools/ttLib/instructions): modules implementing most of the analysis logic
 
-- [TestData](../TestData): folder with various `.ttf` and `.ttx` files for testing the tool (somewhat disorganized)
+- [TestData](TestData): folder with various `.ttf` and `.ttx` files for testing the tool (somewhat disorganized)
 
 #### Current status / Next steps
 
 The tool works on small font files, but tends to crash on more complex files (especially those containing relative jump instructions). This makes it difficult to use to validate new ideas (like font specialization, mentioned earlier). Some work could be done to improve this:
 
-- Refactoring code: Some of the code, particularly [Lib/fontTools/ttLib/instructions/abstractExecute.py](../Lib/fontTools/ttLib/instructions/abstractExecute.py), is monolithic and difficult to reason about. Refactoring this code (perhaps into smaller modules) would make it much easier to reason about and fix bugs.
+- Refactoring code: Some of the code, particularly [Lib/fontTools/ttLib/instructions/abstractExecute.py](Lib/fontTools/ttLib/instructions/abstractExecute.py), is monolithic and difficult to reason about. Refactoring this code (perhaps into smaller modules) would make it much easier to reason about and fix bugs.
 
 - Documentation: The code appears to have certain invariants/assumptions about the bytecode it runs on. For example, the successors to an `IF` instruction seem to be the if-branch, an `ELSE` instruction (if any), and the ending `EIF` instruction. Invariantas like these are not explicitly documented, but recovering these and documenting them would be very helpful in understanding the code.
 
-- Test automation: Currently, it's hard to be confident about the correctness of any changes made to the codebase, beyond running on sample files (and maybe verifying that the font looks the same). [TestData/output_folder/test/test.c](../TestData/output_folder/test/test.c) compares the bitmaps of rendered fonts at a given resolution, so this could be a good start.
+- Test automation: Currently, it's hard to be confident about the correctness of any changes made to the codebase, beyond running on sample files (and maybe verifying that the font looks the same). [TestData/output_folder/test/test.c](TestData/output_folder/test/test.c) compares the bitmaps of rendered fonts at a given resolution, so this could be a good start.

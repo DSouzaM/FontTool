@@ -309,6 +309,8 @@ def parseOptions(args):
 
 
 def main(args=None):
+    print("FOO BAR")
+    sys.exit(1)
     if args is None:
         args = sys.argv[1:]
     jobs, options = parseOptions(args)

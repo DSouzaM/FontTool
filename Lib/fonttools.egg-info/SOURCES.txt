@@ -12,11 +12,6 @@ versioneer.py
 Doc/ttx.1
 Lib/sstruct.py
 Lib/xmlWriter.py
-Lib/compiler/AST.py
-Lib/compiler/__init__.py
-Lib/compiler/bytecode.py
-Lib/compiler/compile.py
-Lib/compiler/token.py
 Lib/fontTools/__init__.py
 Lib/fontTools/__main__.py
 Lib/fontTools/_version.py
@@ -285,6 +280,11 @@ Lib/fontTools/ttLib/sfnt.py
 Lib/fontTools/ttLib/standardGlyphOrder.py
 Lib/fontTools/ttLib/woff2.py
 Lib/fontTools/ttLib/woff2_test.py
+Lib/fontTools/ttLib/compiler/__init__.py
+Lib/fontTools/ttLib/compiler/ast.py
+Lib/fontTools/ttLib/compiler/bytecode.py
+Lib/fontTools/ttLib/compiler/compile.py
+Lib/fontTools/ttLib/compiler/token.py
 Lib/fontTools/ttLib/data/__init__.py
 Lib/fontTools/ttLib/data/dataType.py
 Lib/fontTools/ttLib/instructions/IntermediateCode.py
@@ -292,6 +292,7 @@ Lib/fontTools/ttLib/instructions/__init__.py
 Lib/fontTools/ttLib/instructions/abstractExecute.py
 Lib/fontTools/ttLib/instructions/generateStatements.py
 Lib/fontTools/ttLib/instructions/instructionConstructor.py
+Lib/fontTools/ttLib/instructions/intermediateCode.py
 Lib/fontTools/ttLib/instructions/statements.py
 Lib/fontTools/ttLib/tables/B_A_S_E_.py
 Lib/fontTools/ttLib/tables/BitmapGlyphMetrics.py
